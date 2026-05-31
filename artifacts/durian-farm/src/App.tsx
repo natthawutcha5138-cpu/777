@@ -8,19 +8,33 @@ import Accounting from "@/pages/Accounting";
 import Plots from "@/pages/Plots";
 import Fertilizer from "@/pages/Fertilizer";
 import Forecast from "@/pages/Forecast";
+import LoginPage from "@/pages/LoginPage";
 import NotFound from "@/pages/not-found";
+import { useAuth } from "@/hooks/useAuth";
 
 const queryClient = new QueryClient();
 
-function Router() {
+function AuthGate() {
+  const { user, loading, logout } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-sm text-muted-foreground">กำลังโหลด...</p>
+      </div>
+    );
+  }
+
+  if (!user) return <LoginPage />;
+
   return (
-    <Layout>
+    <Layout user={user} onLogout={logout}>
       <Switch>
-        <Route path="/" component={Dashboard} />
+        <Route path="/"           component={Dashboard} />
         <Route path="/accounting" component={Accounting} />
-        <Route path="/plots" component={Plots} />
+        <Route path="/plots"      component={Plots} />
         <Route path="/fertilizer" component={Fertilizer} />
-        <Route path="/forecast" component={Forecast} />
+        <Route path="/forecast"   component={Forecast} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
@@ -32,7 +46,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
+          <AuthGate />
         </WouterRouter>
         <Toaster />
       </TooltipProvider>
