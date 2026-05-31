@@ -3,6 +3,7 @@ import { getGetDashboardSummaryQueryKey, getGetMonthlyTrendQueryKey, getGetForec
 import { formatBaht, formatNumber, MONTHS_TH } from "@/lib/utils";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Link } from "wouter";
+import WeatherWidget from "@/components/WeatherWidget";
 
 const currentYear = new Date().getFullYear();
 
@@ -83,6 +84,8 @@ export default function Dashboard() {
           ยังไม่มีข้อมูล — เริ่มบันทึกรายรับ/จ่ายเพื่อดูสรุปภาพรวม
         </div>
       )}
+
+      <WeatherWidget />
 
       <div className="grid md:grid-cols-3 gap-4">
         <div className="md:col-span-2 bg-white/80 border border-border/50 rounded-2xl p-5 shadow-sm">
