@@ -2,11 +2,11 @@ import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { path: "/", label: "แดชบอร์ด", icon: "🌿" },
-  { path: "/accounting", label: "บัญชีสวน", icon: "📒" },
-  { path: "/plots", label: "ข้อมูลแปลง", icon: "🗺️" },
-  { path: "/fertilizer", label: "คำนวณปุ๋ย/ยา", icon: "⚗️" },
-  { path: "/forecast", label: "พยากรณ์ฤดูกาล", icon: "📈" },
+  { path: "/",            label: "ภาพรวมสวน" },
+  { path: "/accounting",  label: "บัญชีรายรับ-จ่าย" },
+  { path: "/plots",       label: "ข้อมูลแปลง" },
+  { path: "/fertilizer",  label: "คำนวณปุ๋ยและยา" },
+  { path: "/forecast",    label: "พยากรณ์ฤดูกาล" },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -14,36 +14,27 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header
-        className="sticky top-0 z-50 border-b border-border/60"
-        style={{ background: "linear-gradient(135deg, hsl(145 42% 96%) 0%, hsl(270 40% 97%) 50%, hsl(28 80% 97%) 100%)", backdropFilter: "blur(12px)" }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center h-15 gap-6">
-          <div className="flex items-center gap-2.5 shrink-0 py-2">
-            <div
-              className="w-8 h-8 rounded-xl flex items-center justify-center text-sm shadow-sm"
-              style={{ background: "linear-gradient(135deg, hsl(145 42% 55%), hsl(145 42% 45%))" }}
-            >
-              🌱
+      <header className="bg-primary border-b border-primary sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center h-13">
+          <div className="flex items-center gap-3 shrink-0 mr-8">
+            <div className="w-6 h-6 rounded bg-primary-foreground/20 flex items-center justify-center">
+              <div className="w-3 h-3 rounded-sm bg-primary-foreground" />
             </div>
-            <div>
-              <p className="font-bold text-sm text-foreground leading-none">DurianFarm AI</p>
-              <p className="text-[10px] text-muted-foreground leading-none mt-0.5">ระบบจัดการสวนทุเรียน</p>
-            </div>
+            <span className="text-primary-foreground font-semibold text-base tracking-wide">
+              ระบบจัดการสวนทุเรียน
+            </span>
           </div>
-
-          <nav className="flex items-center gap-1 overflow-x-auto py-2 flex-1">
+          <nav className="flex items-center gap-0.5 overflow-x-auto">
             {navItems.map((item) => (
               <Link key={item.path} href={item.path}>
                 <span
                   className={cn(
-                    "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 cursor-pointer",
+                    "px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors cursor-pointer inline-block",
                     location === item.path
-                      ? "bg-white text-primary shadow-sm border border-primary/20"
-                      : "text-muted-foreground hover:text-foreground hover:bg-white/60"
+                      ? "text-primary-foreground border-b-2 border-primary-foreground"
+                      : "text-primary-foreground/65 hover:text-primary-foreground/90"
                   )}
                 >
-                  <span className="text-xs">{item.icon}</span>
                   {item.label}
                 </span>
               </Link>
@@ -52,12 +43,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-7">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-5 sm:px-8 py-7">
         {children}
       </main>
 
-      <footer className="border-t border-border/50 py-3">
-        <p className="text-center text-xs text-muted-foreground">DurianFarm AI • ระบบจัดการสวนทุเรียนไทย</p>
+      <footer className="border-t border-border py-3 bg-card">
+        <p className="text-center text-xs text-muted-foreground">
+          ระบบจัดการสวนทุเรียน · ข้อมูลอากาศจาก Open-Meteo
+        </p>
       </footer>
     </div>
   );
