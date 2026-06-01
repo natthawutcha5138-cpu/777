@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 interface WeatherData {
   temperature: number; humidity: number; windSpeed: number;
@@ -18,6 +18,8 @@ const LOCATIONS = [
   { label: "ใช้ GPS ของฉัน",   lat: 0,       lon: 0        },
 ];
 
+const REFRESH_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
+
 function weatherLabel(code: number) {
   if (code === 0)  return "ท้องฟ้าแจ่มใส";
   if (code <= 3)   return "มีเมฆบางส่วน";
@@ -31,8 +33,8 @@ function weatherLabel(code: number) {
 function irrigationAdvice(prob: number, code: number) {
   const raining = code >= 51;
   if (raining || prob >= 70) return { level: "ไม่ต้องรดน้ำ", detail: `โอกาสฝนตกสูง ${prob}% — ประหยัดน้ำได้วันนี้`, color: "text-blue-700", bar: "bg-blue-500" };
-  if (prob >= 40)             return { level: "รอดูสภาพอากาศ",detail: `โอกาสฝนตก ${prob}% — รอดูช่วงบ่ายก่อน`,  color: "text-amber-700",bar: "bg-amber-500" };
-  return                             { level: "ควรรดน้ำวันนี้", detail: `โอกาสฝนตกต่ำ ${prob}% — ทุเรียนต้องการน้ำ`,color: "text-primary",  bar: "bg-primary" };
+  if (prob >= 40)             return { level: "รอดูสภาพอากาศ", detail: `โอกาสฝนตก ${prob}% — รอดูช่วงบ่ายก่อน`,  color: "text-amber-700", bar: "bg-amber-500" };
+  return                             { level: "ควรรดน้ำวันนี้",  detail: `โอกาสฝนตกต่ำ ${prob}% — ทุเรียนต้องการน้ำ`, color: "text-primary", bar: "bg-primary" };
 }
 
 async function fetchWeather(lat: number, lon: number): Promise<WeatherData> {
@@ -62,20 +64,37 @@ async function fetchWeather(lat: number, lon: number): Promise<WeatherData> {
   };
 }
 
+function formatCountdown(ms: number) {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
 export default function WeatherWidget() {
   const [weather,       setWeather]       = useState<WeatherData | null>(null);
   const [loading,       setLoading]       = useState(true);
   const [error,         setError]         = useState<string | null>(null);
   const [locationLabel, setLocationLabel] = useState(LOCATIONS[0].label);
   const [lastUpdated,   setLastUpdated]   = useState<Date | null>(null);
+  const [nextRefreshMs, setNextRefreshMs] = useState<number>(REFRESH_INTERVAL_MS);
+  const [refreshing,    setRefreshing]    = useState(false);
 
-  const load = useCallback(async (lat: number, lon: number, label: string) => {
-    setLoading(true); setError(null); setLocationLabel(label);
+  const currentLocRef = useRef<{ lat: number; lon: number; label: string }>(
+    { lat: LOCATIONS[0].lat, lon: LOCATIONS[0].lon, label: LOCATIONS[0].label }
+  );
+
+  const load = useCallback(async (lat: number, lon: number, label: string, silent = false) => {
+    if (!silent) { setLoading(true); setError(null); }
+    else         { setRefreshing(true); }
+    setLocationLabel(label);
+    currentLocRef.current = { lat, lon, label };
     try {
       setWeather(await fetchWeather(lat, lon));
       setLastUpdated(new Date());
-    } catch { setError("ไม่สามารถดึงข้อมูลอากาศได้"); }
-    finally  { setLoading(false); }
+      setNextRefreshMs(REFRESH_INTERVAL_MS);
+    } catch { if (!silent) setError("ไม่สามารถดึงข้อมูลอากาศได้"); }
+    finally  { setLoading(false); setRefreshing(false); }
   }, []);
 
   const handleLocationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -92,16 +111,56 @@ export default function WeatherWidget() {
     } else { load(loc.lat, loc.lon, loc.label); }
   };
 
-  useEffect(() => { const d = LOCATIONS[0]; load(d.lat, d.lon, d.label); }, [load]);
+  const handleManualRefresh = () => {
+    const { lat, lon, label } = currentLocRef.current;
+    if (lat) load(lat, lon, label);
+  };
+
+  // Initial fetch
+  useEffect(() => {
+    const d = LOCATIONS[0];
+    load(d.lat, d.lon, d.label);
+  }, [load]);
+
+  // Auto-refresh every 10 minutes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const { lat, lon, label } = currentLocRef.current;
+      if (lat) load(lat, lon, label, true); // silent = don't show loading skeleton
+    }, REFRESH_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [load]);
+
+  // Countdown timer — updates every second
+  useEffect(() => {
+    if (!lastUpdated) return;
+    const tick = setInterval(() => {
+      const elapsed = Date.now() - lastUpdated.getTime();
+      setNextRefreshMs(Math.max(0, REFRESH_INTERVAL_MS - elapsed));
+    }, 1000);
+    return () => clearInterval(tick);
+  }, [lastUpdated]);
 
   const maxProb = weather?.precipitationProbabilityMax ?? 0;
   const advice  = weather ? irrigationAdvice(maxProb, weather.dailyWeatherCode) : null;
+  const progressPct = lastUpdated
+    ? Math.min(100, ((REFRESH_INTERVAL_MS - nextRefreshMs) / REFRESH_INTERVAL_MS) * 100)
+    : 0;
 
   return (
     <div className="bg-card border border-border rounded-lg p-5 shadow-xs">
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
         <div>
-          <h2 className="text-sm font-semibold text-foreground">สภาพอากาศและการรดน้ำ</h2>
+          <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+            สภาพอากาศและการรดน้ำ
+            {/* Live pulsing dot */}
+            {!loading && weather && (
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+              </span>
+            )}
+          </h2>
           {weather && <p className="text-xs text-muted-foreground mt-0.5">{weatherLabel(weather.dailyWeatherCode)}</p>}
         </div>
         <div className="flex items-center gap-2">
@@ -110,10 +169,13 @@ export default function WeatherWidget() {
             {LOCATIONS.map(l => <option key={l.label} value={l.label}>{l.label}</option>)}
           </select>
           <button
-            onClick={() => { const loc = LOCATIONS.find(l => l.label === locationLabel) ?? LOCATIONS[0]; if (loc.lat) load(loc.lat, loc.lon, loc.label); }}
-            disabled={loading}
-            className="text-xs text-muted-foreground hover:text-primary transition-colors disabled:opacity-40 px-1"
+            onClick={handleManualRefresh}
+            disabled={loading || refreshing}
+            className="text-xs text-muted-foreground hover:text-primary transition-colors disabled:opacity-40 px-1 flex items-center gap-1"
             title="รีเฟรช">
+            {refreshing ? (
+              <span className="inline-block w-3 h-3 border border-primary border-t-transparent rounded-full animate-spin" />
+            ) : null}
             รีเฟรช
           </button>
         </div>
@@ -139,8 +201,8 @@ export default function WeatherWidget() {
 
           <div className="grid grid-cols-3 gap-3 text-sm">
             {[
-              { label: "อุณหภูมิ",  value: `${weather.temperature}°C` },
-              { label: "ความชื้น",  value: `${weather.humidity}%`      },
+              { label: "อุณหภูมิ",   value: `${weather.temperature}°C` },
+              { label: "ความชื้น",   value: `${weather.humidity}%`      },
               { label: "ความเร็วลม", value: `${weather.windSpeed} km/h` },
             ].map(s => (
               <div key={s.label} className="bg-muted/30 rounded px-3 py-2.5 border border-border text-center">
@@ -178,11 +240,24 @@ export default function WeatherWidget() {
             </div>
           )}
 
-          {lastUpdated && (
-            <p className="text-[10px] text-muted-foreground text-right">
-              {locationLabel} · อัพเดต {lastUpdated.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })} น.
-            </p>
-          )}
+          {/* Footer: timestamp + auto-refresh progress */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between items-center text-[10px] text-muted-foreground">
+              <span>
+                {locationLabel} · อัพเดต {lastUpdated?.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })} น.
+              </span>
+              <span className="tabular-nums">
+                รีเฟรชอัตโนมัติใน {formatCountdown(nextRefreshMs)}
+              </span>
+            </div>
+            {/* Auto-refresh progress bar */}
+            <div className="h-0.5 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary/40 rounded-full transition-all duration-1000"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+          </div>
         </div>
       ) : null}
     </div>
