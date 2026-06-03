@@ -1,7 +1,7 @@
 import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import session from "express-session";
-import pinoHttp from "pino-http";
+import { pinoHttp } from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
@@ -19,7 +19,7 @@ const app: Express = express();
 
 app.use(
   pinoHttp({
-    logger,
+    logger: logger as any,
     serializers: {
       req(req: any) {
         return { id: req.id, method: req.method, url: req.url?.split("?")[0] };
