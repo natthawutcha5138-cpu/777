@@ -16,7 +16,7 @@ if (!process.env.SESSION_SECRET) {
 }
 
 const app: Express = express();
-
+// @ts-ignore
 app.use(
   pinoHttp({
     logger,
