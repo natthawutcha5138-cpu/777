@@ -16,9 +16,9 @@ if (!process.env.SESSION_SECRET) {
 }
 
 const app: Express = express();
-// @ts-ignore
+
 app.use(
-  (pinoHttp as any)({
+  pinoHttp({
     logger,
     serializers: {
       req(req: any) {
