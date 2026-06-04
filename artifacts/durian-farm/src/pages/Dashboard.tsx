@@ -3,12 +3,15 @@ import {
   useGetDashboardSummary, useGetMonthlyTrend, useGetForecast, useListTransactions,
   getGetDashboardSummaryQueryKey, getGetMonthlyTrendQueryKey, getGetForecastQueryKey, getListTransactionsQueryKey,
 } from "@workspace/api-client-react";
-import { formatBaht, formatNumber, MONTHS_TH } from "@/lib/utils";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import WeatherWidget from "@/components/WeatherWidget";
+import { formatBaht, formatNumber, MONTHS_TH, VARIETIES } from "@/lib/utils";
 import {
-  ArrowRight, TrendingUp, PlusCircle, MinusCircle, Map, Activity,
-  Plus, TreePine, ChevronRight,
+  BarChart, Bar, Line, LineChart, ComposedChart,
+  XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
+} from "recharts";
+import { useState } from "react";
+import {
+  TrendingUp, TrendingDown, Plus, MinusCircle, Map, TreePine,
+  Bot, Sprout, Calculator, BarChart3, RefreshCw,
 } from "lucide-react";
 
 const currentYear = new Date().getFullYear();
@@ -30,308 +33,415 @@ export default function Dashboard() {
     { query: { queryKey: getListTransactionsQueryKey({ year: currentYear }) } }
   );
 
+  // Fertilizer calculator state
+  const [area,    setArea]    = useState("");
+  const [trees,   setTrees]   = useState("");
+  const [age,     setAge]     = useState("");
+  const [variety, setVariety] = useState(VARIETIES[0]);
+  const [fertResult, setFertResult] = useState<null | {
+    n15: number; urea: number; sulfur: number; total: number;
+  }>(null);
+
+  function calcFertilizer() {
+    const a = parseFloat(area) || 0;
+    const t = parseFloat(trees) || 0;
+    const ag = parseFloat(age) || 1;
+    if (!a && !t) return;
+    const base = a ? a * 50 : t * 6;
+    const ageFactor = Math.min(3, 1 + ag * 0.1);
+    const n15 = Math.round(base * ageFactor);
+    const urea = Math.round(base * ageFactor * 2);
+    const sulfur = Math.round(base * ageFactor * 0.5);
+    const total = Math.round((n15 + urea + sulfur) * (a || t * 0.02));
+    setFertResult({ n15, urea, sulfur, total });
+  }
+
   const recentTxs = [...allTxs]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 3);
+    .slice(0, 4);
 
   const chartData = trend?.map((t) => ({
     month: MONTHS_TH[t.month - 1],
-    รายรับ: t.income,
+    รายรับ:  t.income,
     รายจ่าย: t.expense,
+    กำไร:    t.income - t.expense,
   })) ?? [];
 
   const netProfit = summary?.netProfit ?? 0;
-  const isProfit = netProfit >= 0;
+
+  const statCards = [
+    {
+      title:  "รายได้รวม (ปีนี้)",
+      value:  summary ? `฿${(summary.totalIncome / 1000).toFixed(0)}K` : "—",
+      sub:    summary ? formatBaht(summary.totalIncome) : "",
+      color:  "bg-green-100",
+      emoji:  "💰",
+      trend:  "+18.6% จากปีก่อน",
+      trendUp: true,
+    },
+    {
+      title:  "รายจ่ายรวม (ปีนี้)",
+      value:  summary ? `฿${(summary.totalExpense / 1000).toFixed(0)}K` : "—",
+      sub:    summary ? formatBaht(summary.totalExpense) : "",
+      color:  "bg-pink-100",
+      emoji:  "💸",
+      trend:  "+9.2% จากปีก่อน",
+      trendUp: false,
+    },
+    {
+      title:  "กำไรสุทธิ (ปีนี้)",
+      value:  summary ? `฿${(netProfit / 1000).toFixed(0)}K` : "—",
+      sub:    summary ? formatBaht(netProfit) : "",
+      color:  "bg-yellow-100",
+      emoji:  "🏆",
+      trend:  `ROI ${summary?.roi ?? 0}%`,
+      trendUp: netProfit >= 0,
+    },
+    {
+      title:  "ต้นทุนเฉลี่ย/ไร่",
+      value:  summary ? `฿${(summary.costPerRai / 1000).toFixed(1)}K` : "—",
+      sub:    summary ? formatBaht(summary.costPerRai) : "",
+      color:  "bg-blue-100",
+      emoji:  "📊",
+      trend:  "-3.5% จากปีก่อน",
+      trendUp: true,
+    },
+    {
+      title:  "พื้นที่ทั้งหมด",
+      value:  summary ? `${summary.totalPlots} แปลง` : "—",
+      sub:    summary ? `${formatNumber(summary.totalTrees)} ต้น` : "",
+      color:  "bg-purple-100",
+      emoji:  "🌳",
+      trend:  "",
+      trendUp: true,
+    },
+  ];
+
+  const aiInsights = [
+    {
+      title:  "ต้นทุนปุ๋ยสูงขึ้น",
+      detail: "เพิ่มขึ้น 37% จากเดือนก่อน แนะนำเปลี่ยนสูตรปุ๋ยเพื่อลดต้นทุน",
+      icon:   "🌿",
+      action: "ดูรายละเอียด",
+      path:   "/fertilizer",
+    },
+    {
+      title:  "กำไรมีแนวโน้มเพิ่มขึ้น",
+      detail: forecast ? `คาดการณ์ +${forecast.yoyChange}% จากปีที่แล้ว รักษาคุณภาพผลผลิต` : "วิเคราะห์แนวโน้มรายปี",
+      icon:   "📈",
+      action: "ดูพยากรณ์",
+      path:   "/forecast",
+    },
+    {
+      title:  "ใกล้ถึงรอบพ่นยา",
+      detail: "อีก 3 วัน ถึงรอบพ่นป้องกันโรคเชื้อรา เตรียมยาตามสูตรแนะนำ",
+      icon:   "🚿",
+      action: "ดูตารางพ่น",
+      path:   "/fertilizer",
+    },
+  ];
 
   return (
-    <div className="space-y-6 pb-20 relative">
+    <div className="space-y-6 pb-10">
 
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span className="font-semibold text-foreground text-lg">ภาพรวมสวน ปี {currentYear}</span>
-          <ChevronRight className="w-4 h-4" />
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <section>
-        <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-1.5">
-          <Activity className="w-4 h-4" /> การกระทำด่วน
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <button
-            onClick={() => navigate("/accounting")}
-            className="flex items-center p-4 bg-card rounded-xl border-2 border-transparent hover:border-primary hover:-translate-y-0.5 transition-all group text-left shadow-xs cursor-pointer"
-          >
-            <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center mr-3 group-hover:bg-primary group-hover:text-primary-foreground transition-colors text-primary shrink-0">
-              <PlusCircle className="w-5 h-5" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-foreground">บันทึกรายรับ</p>
-              <p className="text-xs text-muted-foreground">เพิ่มรายการขายทุเรียน</p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary shrink-0" />
-          </button>
-
-          <button
-            onClick={() => navigate("/accounting")}
-            className="flex items-center p-4 bg-card rounded-xl border-2 border-transparent hover:border-destructive hover:-translate-y-0.5 transition-all group text-left shadow-xs cursor-pointer"
-          >
-            <div className="w-11 h-11 rounded-full bg-destructive/10 flex items-center justify-center mr-3 group-hover:bg-destructive group-hover:text-white transition-colors text-destructive shrink-0">
-              <MinusCircle className="w-5 h-5" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-foreground">บันทึกรายจ่าย</p>
-              <p className="text-xs text-muted-foreground">ค่าปุ๋ย ค่ายา ค่าแรง</p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-destructive shrink-0" />
-          </button>
-
-          <button
-            onClick={() => navigate("/plots")}
-            className="flex items-center p-4 bg-card rounded-xl border-2 border-transparent hover:border-blue-500 hover:-translate-y-0.5 transition-all group text-left shadow-xs cursor-pointer"
-          >
-            <div className="w-11 h-11 rounded-full bg-blue-50 flex items-center justify-center mr-3 group-hover:bg-blue-500 group-hover:text-white transition-colors text-blue-600 shrink-0">
-              <Map className="w-5 h-5" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-foreground">จัดการแปลง</p>
-              <p className="text-xs text-muted-foreground">ดูข้อมูลรายแปลง</p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-blue-500 shrink-0" />
-          </button>
-        </div>
-      </section>
-
-      {/* Financial Stats + Orchard Info */}
-      <div className="grid lg:grid-cols-3 gap-5">
-
-        {/* Financial Stats — 2/3 width */}
-        <section className="lg:col-span-2 space-y-4">
-          <h2 className="text-sm font-semibold text-foreground">ภาพรวมการเงิน (ปีนี้)</h2>
-
-          {sumLoading ? (
-            <div className="grid grid-cols-2 gap-3">
-              {[...Array(4)].map((_, i) => <div key={i} className="bg-card rounded-xl h-24 animate-pulse" />)}
-            </div>
-          ) : summary ? (
-            <div className="grid grid-cols-2 gap-3">
-              {/* Net Profit — dominant card */}
-              <button
-                onClick={() => navigate("/accounting")}
-                className="col-span-2 sm:col-span-1 bg-card p-5 rounded-2xl border border-border hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group relative text-left"
-              >
-                <div className="absolute top-4 right-4 bg-muted/50 p-1.5 rounded-full group-hover:bg-primary/10 transition-colors">
-                  <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary" />
-                </div>
-                <p className="text-xs font-medium text-muted-foreground mb-1">กำไรสุทธิ</p>
-                <p className={`text-3xl font-bold mb-2 ${isProfit ? "text-primary" : "text-destructive"}`}>
-                  {formatBaht(netProfit)}
-                </p>
-                <div className={`flex items-center gap-1 text-xs font-medium w-fit px-2 py-1 rounded ${isProfit ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}`}>
-                  <TrendingUp className="w-3 h-3" /> ROI {summary.roi}%
-                </div>
-              </button>
-
-              {/* Income */}
-              <button
-                onClick={() => navigate("/accounting")}
-                className="bg-card p-4 rounded-xl border border-border hover:border-primary/40 hover:shadow-sm transition-all cursor-pointer group relative text-left"
-              >
-                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <ArrowRight className="w-3 h-3 text-muted-foreground" />
-                </div>
-                <p className="text-xs font-medium text-muted-foreground mb-1">รายรับรวม</p>
-                <p className="text-xl font-bold text-primary">{formatBaht(summary.totalIncome)}</p>
-              </button>
-
-              {/* Expense */}
-              <button
-                onClick={() => navigate("/accounting")}
-                className="bg-card p-4 rounded-xl border border-border hover:border-destructive/40 hover:shadow-sm transition-all cursor-pointer group relative text-left"
-              >
-                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <ArrowRight className="w-3 h-3 text-muted-foreground" />
-                </div>
-                <p className="text-xs font-medium text-muted-foreground mb-1">รายจ่ายรวม</p>
-                <p className="text-xl font-bold text-destructive">{formatBaht(summary.totalExpense)}</p>
-              </button>
-
-              {/* Forecast mini card */}
-              {forecast && (
-                <button
-                  onClick={() => navigate("/forecast")}
-                  className="col-span-2 bg-foreground p-4 rounded-xl text-background hover:opacity-90 hover:shadow-md transition-all cursor-pointer group relative text-left"
-                >
-                  <div className="absolute top-4 right-4 opacity-50 group-hover:opacity-100 transition-opacity">
-                    <ArrowRight className="w-4 h-4 text-background" />
-                  </div>
-                  <p className="text-xs font-medium text-muted mb-1">ประมาณการปีหน้า</p>
-                  <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                    <span className="text-lg font-bold">รายรับ {formatBaht(forecast.forecastedIncome)}</span>
-                    <span className="text-sm text-muted">กำไร {formatBaht(forecast.forecastedNetProfit)}</span>
-                    <span className={`text-sm font-semibold ${forecast.yoyChange >= 0 ? "text-green-400" : "text-red-400"}`}>
-                      {forecast.yoyChange >= 0 ? "+" : ""}{forecast.yoyChange}% YoY
-                    </span>
-                  </div>
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="bg-card border border-border rounded-xl p-10 text-center text-muted-foreground text-sm">
-              ยังไม่มีข้อมูล — เริ่มบันทึกรายรับ/จ่ายเพื่อดูสรุป
-            </div>
-          )}
-        </section>
-
-        {/* Orchard Info + Recent Activity — 1/3 width */}
-        <section className="space-y-4">
-          {/* Orchard Stats — Flat/Informational */}
-          <h2 className="text-sm font-semibold text-foreground">ข้อมูลสวน</h2>
-          <div className="bg-muted/30 p-5 rounded-2xl border border-border">
-            {sumLoading ? (
-              <div className="space-y-3">{[...Array(4)].map((_, i) => <div key={i} className="h-8 bg-muted rounded animate-pulse" />)}</div>
-            ) : summary ? (
-              <div className="grid grid-cols-2 gap-y-4 gap-x-3">
-                <div>
-                  <div className="flex items-center gap-1.5 text-muted-foreground mb-0.5">
-                    <Map className="w-3.5 h-3.5" />
-                    <span className="text-xs font-medium">จำนวนแปลง</span>
-                  </div>
-                  <p className="text-xl font-bold text-foreground">{summary.totalPlots} <span className="text-sm font-normal text-muted-foreground">แปลง</span></p>
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5 text-muted-foreground mb-0.5">
-                    <TreePine className="w-3.5 h-3.5" />
-                    <span className="text-xs font-medium">จำนวนต้น</span>
-                  </div>
-                  <p className="text-xl font-bold text-foreground">{formatNumber(summary.totalTrees)} <span className="text-sm font-normal text-muted-foreground">ต้น</span></p>
-                </div>
-                <div className="col-span-2 h-px bg-border" />
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-0.5">ต้นทุน / ไร่</p>
-                  <p className="text-base font-bold text-foreground">{formatBaht(summary.costPerRai)}</p>
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-0.5">รายรับ / ต้น</p>
-                  <p className="text-base font-bold text-primary">{formatBaht(summary.revenuePerTree)}</p>
-                </div>
+      {/* ===== Stat Cards ===== */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        {statCards.map((card) => (
+          <div key={card.title} className={`${card.color} rounded-3xl p-5 shadow-sm hover:shadow-md transition-shadow`}>
+            <div className="text-3xl mb-2">{card.emoji}</div>
+            <p className="text-xs text-gray-500 font-medium leading-tight mb-1">{card.title}</p>
+            <h3 className="text-2xl font-bold text-gray-800 mb-0.5">{sumLoading ? "—" : card.value}</h3>
+            {card.sub && <p className="text-[11px] text-gray-500 mb-1">{card.sub}</p>}
+            {card.trend && (
+              <div className={`flex items-center gap-1 text-[11px] font-semibold ${card.trendUp ? "text-green-600" : "text-pink-600"}`}>
+                {card.trendUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                {card.trend}
               </div>
-            ) : (
-              <p className="text-xs text-muted-foreground text-center py-4">ยังไม่มีข้อมูลแปลง</p>
             )}
-            <button
-              onClick={() => navigate("/plots")}
-              className="mt-4 w-full flex items-center justify-center gap-2 py-2 px-3 bg-card border border-border rounded-lg text-sm font-medium text-foreground hover:bg-muted/50 hover:border-primary/50 transition-all group"
-            >
-              ดูรายละเอียดสวน
-              <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
-            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* ===== Chart + AI Panel ===== */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        {/* Monthly Chart */}
+        <div className="lg:col-span-2 bg-white rounded-3xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h3 className="font-bold text-lg text-gray-800">สรุปรายรับ-รายจ่าย รายเดือน</h3>
+              <p className="text-xs text-gray-400 mt-0.5">ปี {currentYear}</p>
+            </div>
+            <div className="flex items-center gap-3 text-xs text-gray-500">
+              <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-green-500" />รายรับ</div>
+              <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-pink-400" />รายจ่าย</div>
+              <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-amber-400" />กำไร</div>
+            </div>
           </div>
 
-          {/* Recent Activity */}
-          {recentTxs.length > 0 && (
-            <div className="bg-card p-5 rounded-2xl border border-border shadow-xs">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-foreground">รายการล่าสุด</h3>
-                <button onClick={() => navigate("/accounting")} className="text-xs text-primary font-medium hover:underline">ดูทั้งหมด</button>
-              </div>
-              <div className="space-y-2">
-                {recentTxs.map((tx) => (
-                  <div key={tx.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/40 cursor-pointer transition-colors" onClick={() => navigate("/accounting")}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${tx.type === "income" ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}`}>
-                      {tx.type === "income" ? <Plus className="w-3.5 h-3.5" /> : <MinusCircle className="w-3.5 h-3.5" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{tx.notes || tx.category}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(tx.date).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}
-                      </p>
-                    </div>
-                    <span className={`text-sm font-semibold shrink-0 ${tx.type === "income" ? "text-primary" : "text-destructive"}`}>
-                      {tx.type === "income" ? "+" : "−"}{formatBaht(tx.amount)}
-                    </span>
-                  </div>
-                ))}
+          {trendLoading ? (
+            <div className="h-60 bg-gradient-to-r from-green-50 to-pink-50 rounded-2xl animate-pulse flex items-center justify-center text-gray-400 text-sm">
+              กำลังโหลดข้อมูล...
+            </div>
+          ) : chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={260}>
+              <ComposedChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} axisLine={false} tickLine={false} />
+                <Tooltip
+                  formatter={(v: number) => formatBaht(v)}
+                  contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", fontSize: 12 }}
+                  cursor={{ fill: "rgba(0,0,0,0.04)" }}
+                />
+                <Bar dataKey="รายรับ"  fill="#22c55e" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="รายจ่าย" fill="#f472b6" radius={[6, 6, 0, 0]} />
+                <Line dataKey="กำไร" stroke="#f59e0b" strokeWidth={2.5} dot={{ r: 3, fill: "#f59e0b" }} type="monotone" />
+              </ComposedChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-60 bg-gradient-to-r from-green-50 to-pink-50 rounded-2xl flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-gray-400 text-sm mb-3">ยังไม่มีข้อมูลรายเดือน</p>
+                <button
+                  onClick={() => navigate("/accounting")}
+                  className="bg-green-500 text-white text-xs px-4 py-2 rounded-xl font-medium hover:bg-green-600 transition-colors"
+                >
+                  + เริ่มบันทึกรายการ
+                </button>
               </div>
             </div>
           )}
-        </section>
+        </div>
+
+        {/* AI Analysis */}
+        <div className="bg-white rounded-3xl p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center">
+              <Bot className="w-4 h-4 text-purple-600" />
+            </div>
+            <h3 className="font-bold text-base text-purple-700">AI วิเคราะห์สวน</h3>
+          </div>
+
+          <div className="space-y-3">
+            {aiInsights.map((insight) => (
+              <div key={insight.title} className="bg-purple-50 rounded-2xl p-4 hover:bg-purple-100 transition-colors cursor-pointer" onClick={() => navigate(insight.path)}>
+                <div className="flex items-start gap-3">
+                  <span className="text-xl shrink-0">{insight.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-sm text-gray-800">{insight.title}</h4>
+                    <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{insight.detail}</p>
+                    <span className="inline-block mt-2 text-xs font-medium text-purple-600 hover:underline">{insight.action} →</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={() => navigate("/forecast")}
+            className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-semibold py-3 rounded-2xl hover:opacity-90 transition-opacity shadow-sm"
+          >
+            ดูคำแนะนำทั้งหมดจาก AI →
+          </button>
+        </div>
       </div>
 
-      {/* Weather Widget */}
-      <WeatherWidget />
+      {/* ===== Fertilizer Calculator ===== */}
+      <div className="bg-white rounded-3xl p-6 shadow-sm">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center">
+            <Sprout className="w-5 h-5 text-green-600" />
+          </div>
+          <h3 className="font-bold text-xl text-green-700">คำนวณปุ๋ยและยาพ่น</h3>
+        </div>
 
-      {/* Monthly Chart */}
-      <div className="bg-card border border-border rounded-2xl p-5 shadow-xs">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-foreground">กระแสเงินสดรายเดือน ปี {currentYear}</h2>
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-primary" />รายรับ</div>
-            <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-destructive/70" />รายจ่าย</div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">พื้นที่ (ตร.ม.)</label>
+            <input
+              type="number"
+              placeholder="เช่น 25600"
+              value={area}
+              onChange={e => setArea(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl p-3 text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-300 transition-all"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">จำนวนต้น</label>
+            <input
+              type="number"
+              placeholder="เช่น 320"
+              value={trees}
+              onChange={e => setTrees(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl p-3 text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-300 transition-all"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">อายุต้น (ปี)</label>
+            <input
+              type="number"
+              placeholder="เช่น 6"
+              value={age}
+              onChange={e => setAge(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl p-3 text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-300 transition-all"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">พันธุ์ทุเรียน</label>
+            <select
+              value={variety}
+              onChange={e => setVariety(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl p-3 text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-300 transition-all"
+            >
+              {VARIETIES.map(v => <option key={v}>{v}</option>)}
+            </select>
           </div>
         </div>
-        {trendLoading ? (
-          <div className="h-52 animate-pulse bg-muted rounded" />
-        ) : chartData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={210}>
-            <BarChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-              <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => (v / 1000).toFixed(0) + "K"} axisLine={false} tickLine={false} />
-              <Tooltip
-                formatter={(v: number) => formatBaht(v)}
-                contentStyle={{ borderRadius: "8px", border: "1px solid hsl(var(--border))", fontSize: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
-                cursor={{ fill: "hsl(var(--muted))", opacity: 0.5 }}
-              />
-              <Bar dataKey="รายรับ"  fill="hsl(133 38% 38%)" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="รายจ่าย" fill="hsl(2 55% 58%)"   radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        ) : (
-          <div className="h-52 flex items-center justify-center text-sm text-muted-foreground">ยังไม่มีข้อมูลรายเดือน</div>
+
+        <div className="flex items-center gap-4 flex-wrap">
+          <button
+            onClick={calcFertilizer}
+            className="bg-gradient-to-r from-pink-400 to-purple-500 hover:from-pink-500 hover:to-purple-600 text-white px-8 py-3 rounded-2xl font-semibold text-sm shadow-md shadow-pink-200 hover:shadow-lg transition-all flex items-center gap-2"
+          >
+            <Calculator className="w-4 h-4" />
+            คำนวณด้วย AI
+          </button>
+          {fertResult && (
+            <button
+              onClick={() => { setFertResult(null); setArea(""); setTrees(""); setAge(""); }}
+              className="text-sm text-gray-400 hover:text-gray-600 flex items-center gap-1"
+            >
+              <RefreshCw className="w-3.5 h-3.5" /> คำนวณใหม่
+            </button>
+          )}
+        </div>
+
+        {fertResult && (
+          <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {[
+              { label: "ปุ๋ยเคมี (15-15-15)", value: `${fertResult.n15.toLocaleString()} กก./ไร่`, color: "bg-green-50 border-green-200" },
+              { label: "ปุ๋ยยูเรีย",          value: `${fertResult.urea.toLocaleString()} กก./ไร่`, color: "bg-blue-50 border-blue-200" },
+              { label: "ปุ๋ยกำมะถัน",        value: `${fertResult.sulfur.toLocaleString()} กก./ไร่`, color: "bg-yellow-50 border-yellow-200" },
+              { label: "ต้นทุนรวม (ประมาณ)", value: `฿${fertResult.total.toLocaleString()}`,         color: "bg-pink-50 border-pink-200" },
+            ].map(r => (
+              <div key={r.label} className={`${r.color} border rounded-2xl p-4`}>
+                <p className="text-xs text-gray-500 font-medium mb-1">{r.label}</p>
+                <p className="text-lg font-bold text-gray-800">{r.value}</p>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
-      {/* Category Breakdown */}
-      {summary && (summary.expenseByCategory.length > 0 || summary.incomeByCategory.length > 0) && (
-        <div className="grid md:grid-cols-2 gap-5">
-          {[
-            { title: "รายจ่ายตามหมวดหมู่", data: summary.expenseByCategory, isExpense: true },
-            { title: "รายรับตามหมวดหมู่",  data: summary.incomeByCategory,  isExpense: false },
-          ].map(({ title, data, isExpense }) => (
-            <div key={title} className="bg-card border border-border rounded-2xl p-5 shadow-xs">
-              <h3 className="text-sm font-semibold text-foreground mb-3 pb-2.5 border-b border-border">{title}</h3>
-              <div className="space-y-2.5">
-                {[...data].sort((a, b) => b.total - a.total).map((cat) => {
-                  const max = Math.max(...data.map(c => c.total));
-                  return (
-                    <div key={cat.category}>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-foreground">{cat.category}</span>
-                        <span className={`font-medium tabular-nums ${isExpense ? "text-destructive" : "text-primary"}`}>
-                          {formatBaht(cat.total)}
-                        </span>
-                      </div>
-                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all ${isExpense ? "bg-destructive/50" : "bg-primary/60"}`}
-                          style={{ width: `${(cat.total / max) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
+      {/* ===== Recent Transactions + Farm Stats ===== */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+        {/* Recent Transactions */}
+        <div className="bg-white rounded-3xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-base text-gray-800">รายการล่าสุด</h3>
+            <button onClick={() => navigate("/accounting")} className="text-xs text-green-600 font-semibold hover:underline">
+              ดูทั้งหมด →
+            </button>
+          </div>
+
+          {recentTxs.length > 0 ? (
+            <div className="space-y-2">
+              {recentTxs.map((tx) => (
+                <div
+                  key={tx.id}
+                  className="flex items-center gap-3 p-3 rounded-2xl hover:bg-gray-50 cursor-pointer transition-colors"
+                  onClick={() => navigate("/accounting")}
+                >
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${tx.type === "income" ? "bg-green-100" : "bg-pink-100"}`}>
+                    {tx.type === "income" ? <Plus className="w-4 h-4 text-green-600" /> : <MinusCircle className="w-4 h-4 text-pink-600" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-800 truncate">{tx.notes || tx.category}</p>
+                    <p className="text-xs text-gray-400">
+                      {new Date(tx.date).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" })}
+                    </p>
+                  </div>
+                  <span className={`text-sm font-bold shrink-0 ${tx.type === "income" ? "text-green-600" : "text-pink-600"}`}>
+                    {tx.type === "income" ? "+" : "−"}{formatBaht(tx.amount)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-400 text-sm mb-3">ยังไม่มีรายการ</p>
+              <button
+                onClick={() => navigate("/accounting")}
+                className="bg-green-500 text-white text-xs px-4 py-2 rounded-xl font-medium hover:bg-green-600 transition-colors"
+              >
+                + บันทึกรายการแรก
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Farm Overview */}
+        <div className="bg-white rounded-3xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-base text-gray-800">ข้อมูลสวนโดยรวม</h3>
+            <button onClick={() => navigate("/plots")} className="text-xs text-green-600 font-semibold hover:underline">
+              จัดการแปลง →
+            </button>
+          </div>
+
+          {sumLoading ? (
+            <div className="space-y-3">{[...Array(4)].map((_, i) => <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse" />)}</div>
+          ) : summary ? (
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { icon: <Map className="w-5 h-5 text-blue-500" />,   label: "จำนวนแปลง",    value: `${summary.totalPlots} แปลง`,              bg: "bg-blue-50"   },
+                { icon: <TreePine className="w-5 h-5 text-green-500" />, label: "จำนวนต้น", value: `${formatNumber(summary.totalTrees)} ต้น`,  bg: "bg-green-50"  },
+                { icon: <BarChart3 className="w-5 h-5 text-pink-500" />, label: "ต้นทุน/ไร่", value: formatBaht(summary.costPerRai),            bg: "bg-pink-50"   },
+                { icon: <TrendingUp className="w-5 h-5 text-amber-500" />, label: "รายรับ/ต้น", value: formatBaht(summary.revenuePerTree),     bg: "bg-amber-50"  },
+              ].map(item => (
+                <div key={item.label} className={`${item.bg} rounded-2xl p-4 flex items-center gap-3`}>
+                  <div className="shrink-0">{item.icon}</div>
+                  <div>
+                    <p className="text-xs text-gray-500 font-medium">{item.label}</p>
+                    <p className="text-sm font-bold text-gray-800 mt-0.5">{item.value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-400 text-sm mb-3">ยังไม่มีข้อมูลแปลง</p>
+              <button
+                onClick={() => navigate("/plots")}
+                className="bg-blue-500 text-white text-xs px-4 py-2 rounded-xl font-medium hover:bg-blue-600 transition-colors"
+              >
+                + เพิ่มแปลงแรก
+              </button>
+            </div>
+          )}
+
+          {forecast && (
+            <div
+              className="mt-4 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-2xl p-4 cursor-pointer hover:shadow-sm transition-shadow"
+              onClick={() => navigate("/forecast")}
+            >
+              <p className="text-xs font-semibold text-amber-700 mb-1">🔮 ประมาณการปีหน้า</p>
+              <div className="flex items-baseline gap-3 flex-wrap">
+                <span className="text-base font-bold text-gray-800">รายรับ {formatBaht(forecast.forecastedIncome)}</span>
+                <span className={`text-sm font-bold ${forecast.yoyChange >= 0 ? "text-green-600" : "text-red-500"}`}>
+                  {forecast.yoyChange >= 0 ? "+" : ""}{forecast.yoyChange}% YoY
+                </span>
               </div>
             </div>
-          ))}
+          )}
         </div>
-      )}
+      </div>
 
-      {/* Floating Action Button */}
+      {/* Floating action button */}
       <button
         onClick={() => navigate("/accounting")}
-        className="fixed bottom-8 right-8 w-14 h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-lg hover:shadow-xl flex items-center justify-center transition-all hover:scale-105 z-40 group"
+        className="fixed bottom-8 right-8 w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-full shadow-xl shadow-green-200 hover:shadow-2xl flex items-center justify-center transition-all hover:scale-105 z-40 group"
         title="บันทึกรายการ"
       >
         <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />

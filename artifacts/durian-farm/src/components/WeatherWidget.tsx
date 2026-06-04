@@ -71,7 +71,7 @@ function formatCountdown(ms: number) {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-export default function WeatherWidget() {
+export default function WeatherWidget({ compact = false }: { compact?: boolean }) {
   const [weather,       setWeather]       = useState<WeatherData | null>(null);
   const [loading,       setLoading]       = useState(true);
   const [error,         setError]         = useState<string | null>(null);
@@ -146,6 +146,40 @@ export default function WeatherWidget() {
   const progressPct = lastUpdated
     ? Math.min(100, ((REFRESH_INTERVAL_MS - nextRefreshMs) / REFRESH_INTERVAL_MS) * 100)
     : 0;
+
+  if (compact) {
+    return (
+      <div className="bg-gradient-to-br from-green-50 to-teal-50 border border-green-200 rounded-2xl p-4">
+        <p className="text-[11px] font-semibold text-green-700 mb-2 flex items-center gap-1.5">
+          🌤 สภาพอากาศวันนี้
+          {!loading && weather && (
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
+            </span>
+          )}
+        </p>
+        {loading ? (
+          <div className="h-10 bg-green-100 rounded-xl animate-pulse" />
+        ) : error ? (
+          <p className="text-[11px] text-red-500">ดึงข้อมูลไม่ได้</p>
+        ) : weather ? (
+          <>
+            <div className="flex items-end gap-2 mb-2">
+              <span className="text-2xl font-bold text-gray-800">{weather.temperature}°C</span>
+              <span className="text-xs text-gray-500 mb-0.5">{weatherLabel(weather.weatherCode)}</span>
+            </div>
+            <div className="flex gap-3 text-[11px] text-gray-500">
+              <span>💧 {weather.humidity}%</span>
+              <span>🌬 {weather.windSpeed} km/h</span>
+              <span>🌧 {weather.precipitationProbabilityMax}%</span>
+            </div>
+            <p className="text-[11px] text-gray-400 mt-1.5">{locationLabel}</p>
+          </>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div className="bg-card border border-border rounded-lg p-5 shadow-xs">

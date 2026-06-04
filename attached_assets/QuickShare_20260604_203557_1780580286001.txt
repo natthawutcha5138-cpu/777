@@ -1,0 +1,238 @@
+// app/dashboard/page.tsx
+
+import {
+  Home,
+  Wallet,
+  Calculator,
+  Sprout,
+  BarChart3,
+  Bot,
+  CloudSun,
+} from "lucide-react";
+
+export default function Dashboard() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-pink-50 to-yellow-50 flex">
+      
+      {/* Sidebar */}
+      <aside className="w-72 bg-white shadow-xl rounded-r-3xl p-6">
+        <div className="flex items-center gap-3 mb-10">
+          <div className="w-14 h-14 rounded-full bg-green-200 flex items-center justify-center text-2xl">
+            🌳
+          </div>
+
+          <div>
+            <h1 className="font-bold text-xl text-green-700">
+              Durian Smart Farm
+            </h1>
+            <p className="text-sm text-gray-500">
+              AI Farm Management
+            </p>
+          </div>
+        </div>
+
+        <nav className="space-y-3">
+          <MenuItem icon={<Home />} text="หน้าหลัก" active />
+          <MenuItem icon={<Wallet />} text="บัญชีรายรับ-รายจ่าย" />
+          <MenuItem icon={<Calculator />} text="คำนวณปุ๋ย" />
+          <MenuItem icon={<Sprout />} text="ตารางใส่ปุ๋ย" />
+          <MenuItem icon={<BarChart3 />} text="วิเคราะห์ต้นทุน" />
+          <MenuItem icon={<Bot />} text="AI ผู้ช่วยเกษตรกร" />
+        </nav>
+      </aside>
+
+      {/* Content */}
+      <main className="flex-1 p-8">
+
+        {/* Header */}
+        <div className="bg-white rounded-3xl p-6 shadow-sm mb-6 flex justify-between">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-800">
+              👋 สวัสดี เจ้าของสวน
+            </h2>
+
+            <p className="text-gray-500">
+              ระบบบริหารจัดการสวนทุเรียนอัจฉริยะ
+            </p>
+          </div>
+
+          <input
+            placeholder="ค้นหาข้อมูล..."
+            className="border rounded-xl px-4 py-2 w-80"
+          />
+        </div>
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-5 gap-5 mb-6">
+          <StatCard
+            title="รายได้รวม"
+            value="1,245,300"
+            color="bg-green-100"
+            icon="💰"
+          />
+
+          <StatCard
+            title="รายจ่ายรวม"
+            value="623,750"
+            color="bg-pink-100"
+            icon="💸"
+          />
+
+          <StatCard
+            title="กำไรสุทธิ"
+            value="621,550"
+            color="bg-yellow-100"
+            icon="🏆"
+          />
+
+          <StatCard
+            title="ต้นทุนเฉลี่ย"
+            value="12,450"
+            color="bg-blue-100"
+            icon="📊"
+          />
+
+          <StatCard
+            title="พื้นที่สวน"
+            value="25.6 ไร่"
+            color="bg-purple-100"
+            icon="🌳"
+          />
+        </div>
+
+        {/* Main Section */}
+        <div className="grid grid-cols-3 gap-6">
+
+          {/* Chart */}
+          <div className="col-span-2 bg-white rounded-3xl p-6 shadow-sm">
+            <h3 className="font-bold text-xl mb-4">
+              รายรับ-รายจ่ายรายเดือน
+            </h3>
+
+            <div className="h-[350px] bg-gradient-to-r from-green-50 to-pink-50 rounded-xl flex items-center justify-center">
+              Chart Area
+            </div>
+          </div>
+
+          {/* AI Analysis */}
+          <div className="bg-white rounded-3xl p-6 shadow-sm">
+            <h3 className="font-bold text-xl text-purple-700 mb-4">
+              🤖 AI วิเคราะห์สวน
+            </h3>
+
+            <div className="space-y-4">
+              <AIBox
+                title="ต้นทุนปุ๋ยสูงขึ้น"
+                detail="เพิ่มขึ้น 37% จากเดือนก่อน"
+              />
+
+              <AIBox
+                title="กำไรมีแนวโน้มเพิ่ม"
+                detail="คาดการณ์ +28%"
+              />
+
+              <AIBox
+                title="ใกล้ถึงรอบพ่นยา"
+                detail="อีก 3 วัน"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Fertilizer Calculator */}
+        <div className="mt-6 bg-white rounded-3xl p-6 shadow-sm">
+          <h3 className="font-bold text-2xl text-green-700 mb-5">
+            🌱 คำนวณปุ๋ยและยาพ่น
+          </h3>
+
+          <div className="grid grid-cols-4 gap-4">
+
+            <input
+              placeholder="พื้นที่ (ตร.ม.)"
+              className="border rounded-xl p-3"
+            />
+
+            <input
+              placeholder="จำนวนต้น"
+              className="border rounded-xl p-3"
+            />
+
+            <input
+              placeholder="อายุต้น"
+              className="border rounded-xl p-3"
+            />
+
+            <select className="border rounded-xl p-3">
+              <option>หมอนทอง</option>
+              <option>ชะนี</option>
+              <option>ก้านยาว</option>
+            </select>
+          </div>
+
+          <button className="mt-5 bg-gradient-to-r from-pink-400 to-purple-500 text-white px-8 py-3 rounded-2xl font-semibold">
+            คำนวณด้วย AI
+          </button>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function MenuItem({
+  icon,
+  text,
+  active = false,
+}: {
+  icon: React.ReactNode;
+  text: string;
+  active?: boolean;
+}) {
+  return (
+    <div
+      className={`flex items-center gap-3 p-4 rounded-xl cursor-pointer
+      ${
+        active
+          ? "bg-green-500 text-white"
+          : "hover:bg-green-50"
+      }`}
+    >
+      {icon}
+      <span>{text}</span>
+    </div>
+  );
+}
+
+function StatCard({
+  title,
+  value,
+  color,
+  icon,
+}: {
+  title: string;
+  value: string;
+  color: string;
+  icon: string;
+}) {
+  return (
+    <div className={`${color} p-5 rounded-3xl shadow-sm`}>
+      <div className="text-3xl mb-2">{icon}</div>
+      <p className="text-gray-600">{title}</p>
+      <h3 className="text-3xl font-bold">{value}</h3>
+    </div>
+  );
+}
+
+function AIBox({
+  title,
+  detail,
+}: {
+  title: string;
+  detail: string;
+}) {
+  return (
+    <div className="bg-purple-50 p-4 rounded-2xl">
+      <h4 className="font-semibold">{title}</h4>
+      <p className="text-gray-600 text-sm">{detail}</p>
+    </div>
+  );
+}
