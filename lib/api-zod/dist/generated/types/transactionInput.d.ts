@@ -7,7 +7,7 @@
  */
 import type { TransactionInputType } from './transactionInputType';
 export interface TransactionInput {
-    date: Date;
+    date: string;
     type: TransactionInputType;
     category: string;
     amount: number;

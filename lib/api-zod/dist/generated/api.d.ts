@@ -272,7 +272,7 @@ export declare const ListTransactionsQueryParams: zod.ZodObject<{
 }>;
 export declare const ListTransactionsResponseItem: zod.ZodObject<{
     id: zod.ZodNumber;
-    date: zod.ZodDate;
+    date: zod.ZodString;
     type: zod.ZodEnum<["income", "expense"]>;
     category: zod.ZodString;
     amount: zod.ZodNumber;
@@ -283,7 +283,7 @@ export declare const ListTransactionsResponseItem: zod.ZodObject<{
     type: "income" | "expense";
     id: number;
     createdAt: Date;
-    date: Date;
+    date: string;
     category: string;
     amount: number;
     notes?: string | null | undefined;
@@ -292,7 +292,7 @@ export declare const ListTransactionsResponseItem: zod.ZodObject<{
     type: "income" | "expense";
     id: number;
     createdAt: Date;
-    date: Date;
+    date: string;
     category: string;
     amount: number;
     notes?: string | null | undefined;
@@ -300,7 +300,7 @@ export declare const ListTransactionsResponseItem: zod.ZodObject<{
 }>;
 export declare const ListTransactionsResponse: zod.ZodArray<zod.ZodObject<{
     id: zod.ZodNumber;
-    date: zod.ZodDate;
+    date: zod.ZodString;
     type: zod.ZodEnum<["income", "expense"]>;
     category: zod.ZodString;
     amount: zod.ZodNumber;
@@ -311,7 +311,7 @@ export declare const ListTransactionsResponse: zod.ZodArray<zod.ZodObject<{
     type: "income" | "expense";
     id: number;
     createdAt: Date;
-    date: Date;
+    date: string;
     category: string;
     amount: number;
     notes?: string | null | undefined;
@@ -320,7 +320,7 @@ export declare const ListTransactionsResponse: zod.ZodArray<zod.ZodObject<{
     type: "income" | "expense";
     id: number;
     createdAt: Date;
-    date: Date;
+    date: string;
     category: string;
     amount: number;
     notes?: string | null | undefined;
@@ -330,7 +330,7 @@ export declare const ListTransactionsResponse: zod.ZodArray<zod.ZodObject<{
  * @summary Record a new transaction
  */
 export declare const CreateTransactionBody: zod.ZodObject<{
-    date: zod.ZodDate;
+    date: zod.ZodString;
     type: zod.ZodEnum<["income", "expense"]>;
     category: zod.ZodString;
     amount: zod.ZodNumber;
@@ -338,14 +338,14 @@ export declare const CreateTransactionBody: zod.ZodObject<{
     plotId: zod.ZodOptional<zod.ZodNumber>;
 }, "strip", zod.ZodTypeAny, {
     type: "income" | "expense";
-    date: Date;
+    date: string;
     category: string;
     amount: number;
     notes?: string | undefined;
     plotId?: number | undefined;
 }, {
     type: "income" | "expense";
-    date: Date;
+    date: string;
     category: string;
     amount: number;
     notes?: string | undefined;
@@ -362,7 +362,7 @@ export declare const UpdateTransactionParams: zod.ZodObject<{
     id: number;
 }>;
 export declare const UpdateTransactionBody: zod.ZodObject<{
-    date: zod.ZodOptional<zod.ZodDate>;
+    date: zod.ZodOptional<zod.ZodString>;
     type: zod.ZodOptional<zod.ZodEnum<["income", "expense"]>>;
     category: zod.ZodOptional<zod.ZodString>;
     amount: zod.ZodOptional<zod.ZodNumber>;
@@ -371,21 +371,21 @@ export declare const UpdateTransactionBody: zod.ZodObject<{
 }, "strip", zod.ZodTypeAny, {
     type?: "income" | "expense" | undefined;
     notes?: string | undefined;
-    date?: Date | undefined;
+    date?: string | undefined;
     category?: string | undefined;
     amount?: number | undefined;
     plotId?: number | undefined;
 }, {
     type?: "income" | "expense" | undefined;
     notes?: string | undefined;
-    date?: Date | undefined;
+    date?: string | undefined;
     category?: string | undefined;
     amount?: number | undefined;
     plotId?: number | undefined;
 }>;
 export declare const UpdateTransactionResponse: zod.ZodObject<{
     id: zod.ZodNumber;
-    date: zod.ZodDate;
+    date: zod.ZodString;
     type: zod.ZodEnum<["income", "expense"]>;
     category: zod.ZodString;
     amount: zod.ZodNumber;
@@ -396,7 +396,7 @@ export declare const UpdateTransactionResponse: zod.ZodObject<{
     type: "income" | "expense";
     id: number;
     createdAt: Date;
-    date: Date;
+    date: string;
     category: string;
     amount: number;
     notes?: string | null | undefined;
@@ -405,7 +405,7 @@ export declare const UpdateTransactionResponse: zod.ZodObject<{
     type: "income" | "expense";
     id: number;
     createdAt: Date;
-    date: Date;
+    date: string;
     category: string;
     amount: number;
     notes?: string | null | undefined;

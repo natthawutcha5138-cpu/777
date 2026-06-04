@@ -8,7 +8,7 @@
 import type { TransactionType } from './transactionType';
 export interface Transaction {
     id: number;
-    date: Date;
+    date: string;
     type: TransactionType;
     category: string;
     /** Amount in THB */

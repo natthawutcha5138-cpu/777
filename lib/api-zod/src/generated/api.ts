@@ -124,7 +124,7 @@ export const ListTransactionsQueryParams = zod.object({
 
 export const ListTransactionsResponseItem = zod.object({
   "id": zod.number(),
-  "date": zod.coerce.date(),
+  "date": zod.string(),
   "type": zod.enum(['income', 'expense']),
   "category": zod.string(),
   "amount": zod.number().describe('Amount in THB'),
@@ -139,7 +139,7 @@ export const ListTransactionsResponse = zod.array(ListTransactionsResponseItem)
  * @summary Record a new transaction
  */
 export const CreateTransactionBody = zod.object({
-  "date": zod.coerce.date(),
+  "date": zod.string(),
   "type": zod.enum(['income', 'expense']),
   "category": zod.string(),
   "amount": zod.number(),
@@ -156,7 +156,7 @@ export const UpdateTransactionParams = zod.object({
 })
 
 export const UpdateTransactionBody = zod.object({
-  "date": zod.coerce.date().optional(),
+  "date": zod.string().optional(),
   "type": zod.enum(['income', 'expense']).optional(),
   "category": zod.string().optional(),
   "amount": zod.number().optional(),
@@ -166,7 +166,7 @@ export const UpdateTransactionBody = zod.object({
 
 export const UpdateTransactionResponse = zod.object({
   "id": zod.number(),
-  "date": zod.coerce.date(),
+  "date": zod.string(),
   "type": zod.enum(['income', 'expense']),
   "category": zod.string(),
   "amount": zod.number().describe('Amount in THB'),
