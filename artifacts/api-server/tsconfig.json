@@ -3,6 +3,7 @@
     "compilerOptions": {
       "incremental": true,
       "tsBuildInfoFile": ".tsbuildinfo",
+      "rootDir": "src",
       "outDir": "dist",
       "rootDirs": ["src", "../../lib/api-zod/src", "../../lib/db/src"],
       "types": ["node"],

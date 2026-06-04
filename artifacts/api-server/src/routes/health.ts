@@ -1,5 +1,4 @@
 // @ts-nocheck
-// @ts-nocheck
 import { Router, type IRouter } from "express";
 import { HealthStatus } from "@workspace/api-zod";
 
