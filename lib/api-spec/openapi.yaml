@@ -3,13 +3,21 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: DurianFarm AI API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: plots
+    description: Orchard plot management
+  - name: transactions
+    description: Farm accounting transactions
+  - name: fertilizer
+    description: Fertilizer and pesticide calculations
+  - name: dashboard
+    description: Dashboard summaries and forecasting
 paths:
   /healthz:
     get:
@@ -24,6 +32,255 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /plots:
+    get:
+      operationId: listPlots
+      tags: [plots]
+      summary: List all orchard plots
+      responses:
+        "200":
+          description: List of plots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Plot"
+    post:
+      operationId: createPlot
+      tags: [plots]
+      summary: Create a new orchard plot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlotInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plot"
+
+  /plots/{id}:
+    get:
+      operationId: getPlot
+      tags: [plots]
+      summary: Get a plot by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Plot details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plot"
+        "404":
+          description: Not found
+    patch:
+      operationId: updatePlot
+      tags: [plots]
+      summary: Update a plot
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlotUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plot"
+    delete:
+      operationId: deletePlot
+      tags: [plots]
+      summary: Delete a plot
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /transactions:
+    get:
+      operationId: listTransactions
+      tags: [transactions]
+      summary: List farm transactions
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [income, expense]
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [monthly, seasonal, yearly]
+        - name: year
+          in: query
+          schema:
+            type: integer
+        - name: month
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+    post:
+      operationId: createTransaction
+      tags: [transactions]
+      summary: Record a new transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+
+  /transactions/{id}:
+    patch:
+      operationId: updateTransaction
+      tags: [transactions]
+      summary: Update a transaction
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+    delete:
+      operationId: deleteTransaction
+      tags: [transactions]
+      summary: Delete a transaction
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /fertilizer/calculate:
+    post:
+      operationId: calculateFertilizer
+      tags: [fertilizer]
+      summary: Calculate fertilizer and pesticide amounts for a plot and stage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FertilizerInput"
+      responses:
+        "200":
+          description: Calculated fertilizer plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FertilizerPlan"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get overall farm dashboard summary
+      parameters:
+        - name: year
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/forecast:
+    get:
+      operationId: getForecast
+      tags: [dashboard]
+      summary: Get AI-powered season forecast and recommendations
+      responses:
+        "200":
+          description: Season forecast
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForecastResult"
+
+  /dashboard/monthly-trend:
+    get:
+      operationId: getMonthlyTrend
+      tags: [dashboard]
+      summary: Get monthly income/expense trend for charts
+      parameters:
+        - name: year
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Monthly trend data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MonthlyTrend"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +291,274 @@ components:
       required:
         - status
 
+    Plot:
+      type: object
+      required: [id, name, areRai, treeCount, variety, treeAge, plantedDate, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        areRai:
+          type: number
+          description: Area in rai
+        treeCount:
+          type: integer
+        variety:
+          type: string
+          description: "หมอนทอง | ชะนี | กระดุม | พวงมณี | ก้านยาว"
+        treeAge:
+          type: integer
+          description: Tree age in years
+        plantedDate:
+          type: string
+          format: date
+        notes:
+          type: ["string", "null"]
+        status:
+          type: string
+          description: "Auto-calculated status based on tree age"
+        density:
+          type: number
+          description: Trees per rai
+        createdAt:
+          type: string
+          format: date-time
+
+    PlotInput:
+      type: object
+      required: [name, areRai, treeCount, variety, treeAge, plantedDate]
+      properties:
+        name:
+          type: string
+        areRai:
+          type: number
+        treeCount:
+          type: integer
+        variety:
+          type: string
+        treeAge:
+          type: integer
+        plantedDate:
+          type: string
+          format: date
+        notes:
+          type: string
+
+    PlotUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        areRai:
+          type: number
+        treeCount:
+          type: integer
+        variety:
+          type: string
+        treeAge:
+          type: integer
+        plantedDate:
+          type: string
+          format: date
+        notes:
+          type: string
+
+    Transaction:
+      type: object
+      required: [id, date, type, category, amount, createdAt]
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+          format: date
+        type:
+          type: string
+          enum: [income, expense]
+        category:
+          type: string
+        amount:
+          type: number
+          description: Amount in THB
+        notes:
+          type: ["string", "null"]
+        plotId:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    TransactionInput:
+      type: object
+      required: [date, type, category, amount]
+      properties:
+        date:
+          type: string
+          format: date
+        type:
+          type: string
+          enum: [income, expense]
+        category:
+          type: string
+        amount:
+          type: number
+        notes:
+          type: string
+        plotId:
+          type: integer
+
+    TransactionUpdate:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        type:
+          type: string
+          enum: [income, expense]
+        category:
+          type: string
+        amount:
+          type: number
+        notes:
+          type: string
+        plotId:
+          type: integer
+
+    FertilizerInput:
+      type: object
+      required: [areRai, treeCount, stage]
+      properties:
+        areRai:
+          type: number
+        treeCount:
+          type: integer
+        stage:
+          type: integer
+          description: "1=เตรียมออกดอก, 2=ออกดอก, 3=ติดผล, 4=ก่อนเก็บเกี่ยว"
+        variety:
+          type: string
+
+    FertilizerItem:
+      type: object
+      required: [name, unit, quantityPerRai, totalQuantity, estimatedCostPerUnit, totalCost]
+      properties:
+        name:
+          type: string
+        unit:
+          type: string
+        quantityPerRai:
+          type: number
+        totalQuantity:
+          type: number
+        estimatedCostPerUnit:
+          type: number
+        totalCost:
+          type: number
+
+    FertilizerPlan:
+      type: object
+      required: [stage, stageName, fertilizers, pesticides, totalFertilizerCost, totalPesticideCost, totalCost, costPerRai, costPerTree]
+      properties:
+        stage:
+          type: integer
+        stageName:
+          type: string
+        fertilizers:
+          type: array
+          items:
+            $ref: "#/components/schemas/FertilizerItem"
+        pesticides:
+          type: array
+          items:
+            $ref: "#/components/schemas/FertilizerItem"
+        totalFertilizerCost:
+          type: number
+        totalPesticideCost:
+          type: number
+        totalCost:
+          type: number
+        costPerRai:
+          type: number
+        costPerTree:
+          type: number
+
+    DashboardSummary:
+      type: object
+      required: [totalIncome, totalExpense, netProfit, roi, totalPlots, totalTrees, totalAreaRai, costPerRai, revenuePerTree]
+      properties:
+        totalIncome:
+          type: number
+        totalExpense:
+          type: number
+        netProfit:
+          type: number
+        roi:
+          type: number
+          description: ROI in percentage
+        totalPlots:
+          type: integer
+        totalTrees:
+          type: integer
+        totalAreaRai:
+          type: number
+        costPerRai:
+          type: number
+        revenuePerTree:
+          type: number
+        expenseByCategory:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategorySummary"
+        incomeByCategory:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategorySummary"
+
+    CategorySummary:
+      type: object
+      required: [category, total]
+      properties:
+        category:
+          type: string
+        total:
+          type: number
+
+    MonthlyTrend:
+      type: object
+      required: [month, year, income, expense, netProfit]
+      properties:
+        month:
+          type: integer
+        year:
+          type: integer
+        income:
+          type: number
+        expense:
+          type: number
+        netProfit:
+          type: number
+
+    ForecastResult:
+      type: object
+      required: [forecastedIncome, forecastedExpense, forecastedNetProfit, yoyChange, recommendations, inputCostInflation]
+      properties:
+        forecastedIncome:
+          type: number
+        forecastedExpense:
+          type: number
+        forecastedNetProfit:
+          type: number
+        yoyChange:
+          type: number
+          description: Year-over-year change percentage
+        inputCostInflation:
+          type: number
+          description: Estimated input cost inflation percentage
+        recommendations:
+          type: array
+          items:
+            type: string
+        currentSeasonStage:
+          type: string
