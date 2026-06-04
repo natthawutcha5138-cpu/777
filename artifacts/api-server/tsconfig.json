@@ -4,7 +4,7 @@
       "incremental": true,
       "tsBuildInfoFile": ".tsbuildinfo",
       "outDir": "dist",
-      "rootDir": "src",
+      "rootDirs": ["src", "../../lib/api-zod/src", "../../lib/db/src"],
       "types": ["node"],
       "esModuleInterop": true,
       "allowSyntheticDefaultImports": true,
@@ -13,6 +13,6 @@
         "@workspace/db": ["../../lib/db/src/index.ts"]
       }
     },
-    "include": ["src"]
+    "include": ["src", "../../lib/api-zod/src", "../../lib/db/src"]
 }
 
