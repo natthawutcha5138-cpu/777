@@ -3,13 +3,14 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
 export const transactionsTable = pgTable("transactions", {
-  id: serial("id").primaryKey(),
-  date: date("date", { mode: "string" }).notNull(),
-  type: text("type").notNull(),
-  category: text("category").notNull(),
-  amount: real("amount").notNull(),
-  notes: text("notes"),
-  plotId: integer("plot_id"),
+  id:        serial("id").primaryKey(),
+  userId:    integer("user_id").notNull(),
+  date:      date("date", { mode: "string" }).notNull(),
+  type:      text("type").notNull(),
+  category:  text("category").notNull(),
+  amount:    real("amount").notNull(),
+  notes:     text("notes"),
+  plotId:    integer("plot_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

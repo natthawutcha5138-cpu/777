@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { Router, type IRouter } from "express";
-import { sql, and } from "drizzle-orm";
+import { sql, and, eq } from "drizzle-orm";
 import { db, transactionsTable, plotsTable } from "@workspace/db";
 import {
   GetDashboardSummaryQueryParams,
@@ -21,7 +21,9 @@ router.get("/dashboard/summary", async (req, res): Promise<void> => {
 
   const year = params.data.year ?? new Date().getFullYear();
 
+  const userId = req.session.userId!;
   const txConditions = [
+    eq(transactionsTable.userId, userId),
     sql`EXTRACT(YEAR FROM ${transactionsTable.date}::date) = ${year}`,
   ];
 
@@ -41,7 +43,7 @@ router.get("/dashboard/summary", async (req, res): Promise<void> => {
   const netProfit = totalIncome - totalExpense;
   const roi = totalExpense > 0 ? Math.round((netProfit / totalExpense) * 1000) / 10 : 0;
 
-  const plots = await db.select().from(plotsTable);
+  const plots = await db.select().from(plotsTable).where(eq(plotsTable.userId, userId));
   const totalPlots = plots.length;
   const totalTrees = plots.reduce((sum, p) => sum + p.treeCount, 0);
   const totalAreaRai = plots.reduce((sum, p) => sum + p.areRai, 0);
@@ -91,10 +93,14 @@ router.get("/dashboard/monthly-trend", async (req, res): Promise<void> => {
 
   const year = params.data.year ?? new Date().getFullYear();
 
+  const userId = req.session.userId!;
   const transactions = await db
     .select()
     .from(transactionsTable)
-    .where(sql`EXTRACT(YEAR FROM ${transactionsTable.date}::date) = ${year}`);
+    .where(and(
+      eq(transactionsTable.userId, userId),
+      sql`EXTRACT(YEAR FROM ${transactionsTable.date}::date) = ${year}`
+    ));
 
   const monthlyData: Record<number, { income: number; expense: number }> = {};
   for (let m = 1; m <= 12; m++) {
@@ -124,11 +130,15 @@ router.get("/dashboard/monthly-trend", async (req, res): Promise<void> => {
 router.get("/dashboard/forecast", async (req, res): Promise<void> => {
   const currentYear = new Date().getFullYear();
 
+  const userId = req.session.userId!;
   const getYearTotals = async (year: number) => {
     const txs = await db
       .select()
       .from(transactionsTable)
-      .where(sql`EXTRACT(YEAR FROM ${transactionsTable.date}::date) = ${year}`);
+      .where(and(
+        eq(transactionsTable.userId, userId),
+        sql`EXTRACT(YEAR FROM ${transactionsTable.date}::date) = ${year}`
+      ));
     const income = txs.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
     const expense = txs.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0);
     return { income, expense };

@@ -1,10 +1,14 @@
 import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import type { AuthUser } from "@/hooks/useAuth";
+
+interface LoginPageProps {
+  onLogin:    (username: string, password: string) => Promise<string | null>;
+  onRegister: (username: string, password: string, displayName: string) => Promise<string | null>;
+}
 
 type Mode = "login" | "register";
 
-export default function LoginPage() {
-  const { login, register } = useAuth();
+export default function LoginPage({ onLogin, onRegister }: LoginPageProps) {
   const [mode,        setMode]        = useState<Mode>("login");
   const [username,    setUsername]    = useState("");
   const [password,    setPassword]    = useState("");
@@ -17,8 +21,8 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     const err = mode === "login"
-      ? await login(username, password)
-      : await register(username, password, displayName);
+      ? await onLogin(username, password)
+      : await onRegister(username, password, displayName);
     if (err) setError(err);
     setLoading(false);
   }

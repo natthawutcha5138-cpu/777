@@ -15,7 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 const queryClient = new QueryClient();
 
 function AuthGate() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, login, register, logout } = useAuth();
 
   if (loading) {
     return (
@@ -25,7 +25,7 @@ function AuthGate() {
     );
   }
 
-  if (!user) return <LoginPage />;
+  if (!user) return <LoginPage onLogin={login} onRegister={register} />;
 
   return (
     <Layout user={user} onLogout={logout}>

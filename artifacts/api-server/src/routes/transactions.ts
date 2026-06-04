@@ -15,6 +15,7 @@ import {
 const router: IRouter = Router();
 
 router.get("/transactions", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
   const params = ListTransactionsQueryParams.safeParse(req.query);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -23,7 +24,7 @@ router.get("/transactions", async (req, res): Promise<void> => {
 
   const { type, year, month } = params.data;
 
-  const conditions = [];
+  const conditions: ReturnType<typeof eq>[] = [eq(transactionsTable.userId, userId)];
   if (type) conditions.push(eq(transactionsTable.type, type));
   if (year) conditions.push(sql`EXTRACT(YEAR FROM ${transactionsTable.date}::date) = ${year}`);
   if (month) conditions.push(sql`EXTRACT(MONTH FROM ${transactionsTable.date}::date) = ${month}`);
@@ -31,19 +32,20 @@ router.get("/transactions", async (req, res): Promise<void> => {
   const transactions = await db
     .select()
     .from(transactionsTable)
-    .where(conditions.length > 0 ? and(...conditions) : undefined)
+    .where(and(...conditions))
     .orderBy(transactionsTable.date);
 
   res.json(ListTransactionsResponse.parse(transactions));
 });
 
 router.post("/transactions", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
   const parsed = CreateTransactionBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [tx] = await db.insert(transactionsTable).values(parsed.data).returning();
+  const [tx] = await db.insert(transactionsTable).values({ ...parsed.data, userId }).returning();
   res.status(201).json(tx);
 });
 
@@ -58,10 +60,11 @@ router.patch("/transactions/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
+  const userId = req.session.userId!;
   const [tx] = await db
     .update(transactionsTable)
     .set(parsed.data)
-    .where(eq(transactionsTable.id, params.data.id))
+    .where(and(eq(transactionsTable.id, params.data.id), eq(transactionsTable.userId, userId)))
     .returning();
   if (!tx) {
     res.status(404).json({ error: "Transaction not found" });
@@ -71,12 +74,15 @@ router.patch("/transactions/:id", async (req, res): Promise<void> => {
 });
 
 router.delete("/transactions/:id", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
   const params = DeleteTransactionParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const [deleted] = await db.delete(transactionsTable).where(eq(transactionsTable.id, params.data.id)).returning();
+  const [deleted] = await db.delete(transactionsTable)
+    .where(and(eq(transactionsTable.id, params.data.id), eq(transactionsTable.userId, userId)))
+    .returning();
   if (!deleted) {
     res.status(404).json({ error: "Transaction not found" });
     return;

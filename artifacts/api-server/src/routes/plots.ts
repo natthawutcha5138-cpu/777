@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db, plotsTable } from "@workspace/db";
 import {
   CreatePlotBody,
@@ -29,28 +29,34 @@ function enrichPlot(plot: typeof plotsTable.$inferSelect) {
   };
 }
 
-router.get("/plots", async (_req, res): Promise<void> => {
-  const plots = await db.select().from(plotsTable).orderBy(plotsTable.createdAt);
+router.get("/plots", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
+  const plots = await db.select().from(plotsTable)
+    .where(eq(plotsTable.userId, userId))
+    .orderBy(plotsTable.createdAt);
   res.json(ListPlotsResponse.parse(plots.map(enrichPlot)));
 });
 
 router.post("/plots", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
   const parsed = CreatePlotBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [plot] = await db.insert(plotsTable).values(parsed.data).returning();
+  const [plot] = await db.insert(plotsTable).values({ ...parsed.data, userId }).returning();
   res.status(201).json(GetPlotResponse.parse(enrichPlot(plot)));
 });
 
 router.get("/plots/:id", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
   const params = GetPlotParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const [plot] = await db.select().from(plotsTable).where(eq(plotsTable.id, params.data.id));
+  const [plot] = await db.select().from(plotsTable)
+    .where(and(eq(plotsTable.id, params.data.id), eq(plotsTable.userId, userId)));
   if (!plot) {
     res.status(404).json({ error: "Plot not found" });
     return;
@@ -59,6 +65,7 @@ router.get("/plots/:id", async (req, res): Promise<void> => {
 });
 
 router.patch("/plots/:id", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
   const params = UpdatePlotParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -72,7 +79,7 @@ router.patch("/plots/:id", async (req, res): Promise<void> => {
   const [plot] = await db
     .update(plotsTable)
     .set(parsed.data)
-    .where(eq(plotsTable.id, params.data.id))
+    .where(and(eq(plotsTable.id, params.data.id), eq(plotsTable.userId, userId)))
     .returning();
   if (!plot) {
     res.status(404).json({ error: "Plot not found" });
@@ -82,12 +89,15 @@ router.patch("/plots/:id", async (req, res): Promise<void> => {
 });
 
 router.delete("/plots/:id", async (req, res): Promise<void> => {
+  const userId = req.session.userId!;
   const params = DeletePlotParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const [deleted] = await db.delete(plotsTable).where(eq(plotsTable.id, params.data.id)).returning();
+  const [deleted] = await db.delete(plotsTable)
+    .where(and(eq(plotsTable.id, params.data.id), eq(plotsTable.userId, userId)))
+    .returning();
   if (!deleted) {
     res.status(404).json({ error: "Plot not found" });
     return;
