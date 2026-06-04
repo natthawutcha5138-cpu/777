@@ -1,7 +1,5 @@
 {
   "buildCommand": "node ./build.mjs",
-  "framework": null,
-  "env": {
-    "VERCEL_SKIP_TYPECHECK": "1"
-  }
+  "outputDirectory": "dist",
+  "framework": null
 }
