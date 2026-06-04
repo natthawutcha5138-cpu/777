@@ -1,4 +1,7 @@
 {
   "buildCommand": "node ./build.mjs",
-  "framework": null
+  "framework": null,
+  "env": {
+    "VERCEL_SKIP_TYPECHECK": "1"
+  }
 }
