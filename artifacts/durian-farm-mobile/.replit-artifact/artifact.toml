@@ -1,0 +1,27 @@
+kind = "mobile"
+previewPath = "/mobile/"
+title = "DurianFarm Mobile"
+version = "1.0.0"
+id = "artifacts/durian-farm-mobile"
+router = "expo-domain"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+ensurePreviewReachable = "/status"
+name = "expo"
+paths = [ "/mobile/" ]
+localPort = 25952
+
+[services.development]
+run = "pnpm --filter @workspace/durian-farm-mobile run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/durian-farm-mobile", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/durian-farm-mobile", "run", "serve" ]
+
+[services.env]
+PORT = "25952"
+BASE_PATH = "/mobile/"
