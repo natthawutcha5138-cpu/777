@@ -14,6 +14,8 @@ export const plotsTable = pgTable("plots", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertPlotSchema = createInsertSchema(plotsTable).omit({ id: true, createdAt: true });
+export const insertPlotSchema = createInsertSchema(plotsTable, {
+    plantedDate: z.string(),
+}).omit({ id: true, createdAt: true });
 export type InsertPlot = z.infer<typeof insertPlotSchema>;
 export type Plot = typeof plotsTable.$inferSelect;
