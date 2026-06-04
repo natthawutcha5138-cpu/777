@@ -1,21 +1,18 @@
 {
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "incremental": true,
-    "tsBuildInfoFile": ".tsbuildinfo",
-    "outDir": "dist",
-    "rootDir": "src",
-    "types": ["node"],
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true
-  },
-  "include": ["src"],
-  "references": [
-    {
-      "path": "../../lib/db"
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+      "incremental": true,
+      "tsBuildInfoFile": ".tsbuildinfo",
+      "outDir": "dist",
+      "rootDir": "src",
+      "types": ["node"],
+      "esModuleInterop": true,
+      "allowSyntheticDefaultImports": true,
+      "paths": {
+        "@workspace/api-zod": ["../../lib/api-zod/src/index.ts"],
+        "@workspace/db": ["../../lib/db/src/index.ts"]
+      }
     },
-    {
-      "path": "../../lib/api-zod"
-    }
-  ]
+    "include": ["src"]
 }
+
