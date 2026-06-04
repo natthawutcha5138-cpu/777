@@ -45,7 +45,7 @@ export default function Layout({ children, user, onLogout }: LayoutProps) {
       {/* Mobile overlay */}
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-50 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
@@ -53,11 +53,11 @@ export default function Layout({ children, user, onLogout }: LayoutProps) {
       {/* ===== Sidebar ===== */}
       <aside
         className={cn(
-          "shrink-0 flex flex-col sticky top-0 h-screen overflow-y-auto z-40 transition-all duration-300",
-          "shadow-2xl",
+          "shrink-0 flex flex-col sticky top-0 h-screen overflow-y-auto z-50 transition-all duration-300 shadow-2xl",
           sidebarOpen ? "w-56" : "w-[68px]",
-          "max-lg:fixed max-lg:left-0 max-lg:top-0",
-          mobileSidebarOpen ? "max-lg:translate-x-0 max-lg:w-56" : "max-lg:-translate-x-full",
+          /* mobile: slide in/out as fixed overlay */
+          "max-lg:fixed max-lg:left-0 max-lg:top-0 max-lg:h-screen",
+          mobileSidebarOpen ? "max-lg:translate-x-0 max-lg:w-64" : "max-lg:-translate-x-full max-lg:pointer-events-none",
         )}
         style={{ background: "linear-gradient(180deg, #0e1f12 0%, #152a1a 60%, #0e1f12 100%)" }}
       >
@@ -66,7 +66,7 @@ export default function Layout({ children, user, onLogout }: LayoutProps) {
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-lg shadow-lg shrink-0">
             🌳
           </div>
-          {sidebarOpen && (
+          {(sidebarOpen || mobileSidebarOpen) && (
             <div className="min-w-0 flex-1">
               <h1 className="font-bold text-[12px] text-green-300 leading-tight truncate">ทุเรียนสมาร์ทฟาร์ม</h1>
               <p className="text-[10px] text-white/30 mt-0.5 truncate">AI Farm Management</p>
@@ -88,31 +88,32 @@ export default function Layout({ children, user, onLogout }: LayoutProps) {
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location === item.path;
+            const showLabel = sidebarOpen || mobileSidebarOpen;
             return (
-              <Link key={item.path} href={item.path} onClick={() => setMobileSidebarOpen(false)}>
-                <div
-                  title={!sidebarOpen ? item.label : undefined}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all text-sm font-medium",
-                    !sidebarOpen && "justify-center px-2",
-                    isActive
-                      ? "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-900/50"
-                      : "text-white/50 hover:bg-white/8 hover:text-white/90",
-                  )}
-                  style={!isActive ? { "--tw-bg-opacity": 1 } as React.CSSProperties : undefined}
-                >
-                  <Icon className={cn("w-[18px] h-[18px] shrink-0", isActive ? "text-white" : "text-white/50 group-hover:text-white")} />
-                  {sidebarOpen && <span className="text-[13px] truncate">{item.label}</span>}
-                </div>
+              <Link
+                key={item.path}
+                href={item.path}
+                onClick={() => setMobileSidebarOpen(false)}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium no-underline",
+                  !showLabel && "justify-center px-2",
+                  isActive
+                    ? "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-900/50"
+                    : "text-white/55 hover:bg-white/10 hover:text-white",
+                )}
+                title={!showLabel ? item.label : undefined}
+              >
+                <Icon className="w-[18px] h-[18px] shrink-0" />
+                {showLabel && <span className="text-[13px] truncate">{item.label}</span>}
               </Link>
             );
           })}
         </nav>
 
         {/* Compact Weather — only when expanded */}
-        {sidebarOpen && (
+        {(sidebarOpen || mobileSidebarOpen) && (
           <div className="px-2 mt-2">
-            <div className="rounded-xl overflow-hidden opacity-80">
+            <div className="rounded-xl overflow-hidden">
               <WeatherWidget compact />
             </div>
           </div>
@@ -120,7 +121,7 @@ export default function Layout({ children, user, onLogout }: LayoutProps) {
 
         {/* User row */}
         <div className="p-3 border-t border-white/10 mt-2 shrink-0">
-          {sidebarOpen ? (
+          {(sidebarOpen || mobileSidebarOpen) ? (
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-md">
                 {user.displayName.charAt(0)}
@@ -154,15 +155,15 @@ export default function Layout({ children, user, onLogout }: LayoutProps) {
         </div>
       </aside>
 
-      {/* ===== Main ===== */}
+      {/* ===== Main area ===== */}
       <div className="flex-1 flex flex-col min-w-0">
 
         {/* Top Header */}
         <header className="bg-white/80 backdrop-blur-md border-b border-white/60 px-4 py-2 flex items-center gap-3 sticky top-0 z-30 shadow-sm">
           {/* Mobile hamburger */}
           <button
-            className="lg:hidden p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
-            onClick={() => setMobileSidebarOpen(true)}
+            className="lg:hidden p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors cursor-pointer"
+            onClick={() => setMobileSidebarOpen(v => !v)}
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -182,16 +183,18 @@ export default function Layout({ children, user, onLogout }: LayoutProps) {
             />
           </div>
 
-          <button className="relative w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors shrink-0">
+          {/* Bell */}
+          <button className="relative w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors shrink-0 cursor-pointer">
             <Bell className="w-3.5 h-3.5 text-gray-500" />
             <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-pink-500 text-white text-[8px] rounded-full flex items-center justify-center font-bold">3</span>
           </button>
 
-          {/* User dropdown — now functional */}
+          {/* ===== User Dropdown ===== */}
           <div className="relative shrink-0" ref={userMenuRef}>
             <button
+              type="button"
               onClick={() => setShowUserMenu(v => !v)}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors"
+              className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer select-none"
             >
               <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center text-white text-[10px] font-bold">
                 {user.displayName.charAt(0)}
@@ -201,7 +204,10 @@ export default function Layout({ children, user, onLogout }: LayoutProps) {
             </button>
 
             {showUserMenu && (
-              <div className="absolute right-0 top-full mt-1.5 w-52 bg-white rounded-2xl shadow-2xl border border-gray-100 py-1.5 z-50 overflow-hidden">
+              <div
+                className="absolute right-0 top-full mt-2 w-52 rounded-2xl shadow-2xl border border-gray-100 py-1.5 overflow-hidden"
+                style={{ background: "#fff", zIndex: 9999 }}
+              >
                 <div className="px-4 py-3 border-b border-gray-100">
                   <div className="flex items-center gap-2.5">
                     <div className="w-9 h-9 rounded-full bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center text-white text-sm font-bold">
@@ -215,14 +221,16 @@ export default function Layout({ children, user, onLogout }: LayoutProps) {
                 </div>
                 <div className="px-1.5 py-1">
                   <button
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                    type="button"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
                     onClick={() => setShowUserMenu(false)}
                   >
                     <User className="w-4 h-4 text-gray-400" />
                     โปรไฟล์ของฉัน
                   </button>
                   <button
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-colors mt-0.5"
+                    type="button"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-colors mt-0.5 cursor-pointer"
                     onClick={() => { setShowUserMenu(false); onLogout(); }}
                   >
                     <LogOut className="w-4 h-4" />

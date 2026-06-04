@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { RefreshCw } from "lucide-react";
 
 interface WeatherData {
   temperature: number; humidity: number; windSpeed: number;
@@ -18,7 +19,7 @@ const LOCATIONS = [
   { label: "ใช้ GPS ของฉัน",   lat: 0,       lon: 0        },
 ];
 
-const REFRESH_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
+const REFRESH_INTERVAL_MS = 10 * 60 * 1000;
 
 function weatherLabel(code: number) {
   if (code === 0)  return "ท้องฟ้าแจ่มใส";
@@ -30,11 +31,29 @@ function weatherLabel(code: number) {
   return "พายุฝนฟ้าคะนอง";
 }
 
+function weatherEmoji(code: number) {
+  if (code === 0)  return "☀️";
+  if (code <= 3)   return "⛅";
+  if (code <= 48)  return "☁️";
+  if (code <= 57)  return "🌦️";
+  if (code <= 67)  return "🌧️";
+  if (code <= 82)  return "⛈️";
+  return "🌪️";
+}
+
 function irrigationAdvice(prob: number, code: number) {
   const raining = code >= 51;
   if (raining || prob >= 70) return { level: "ไม่ต้องรดน้ำ", detail: `โอกาสฝนตกสูง ${prob}% — ประหยัดน้ำได้วันนี้`, color: "text-blue-700", bar: "bg-blue-500" };
-  if (prob >= 40)             return { level: "รอดูสภาพอากาศ", detail: `โอกาสฝนตก ${prob}% — รอดูช่วงบ่ายก่อน`,  color: "text-amber-700", bar: "bg-amber-500" };
-  return                             { level: "ควรรดน้ำวันนี้",  detail: `โอกาสฝนตกต่ำ ${prob}% — ทุเรียนต้องการน้ำ`, color: "text-primary", bar: "bg-primary" };
+  if (prob >= 40)            return { level: "รอดูสภาพอากาศ", detail: `โอกาสฝนตก ${prob}% — รอดูช่วงบ่ายก่อน`,  color: "text-amber-700", bar: "bg-amber-500" };
+  return                            { level: "ควรรดน้ำวันนี้",  detail: `โอกาสฝนตกต่ำ ${prob}% — ทุเรียนต้องการน้ำ`, color: "text-primary", bar: "bg-primary" };
+}
+
+function relativeTime(date: Date | null): string {
+  if (!date) return "";
+  const diffMin = Math.floor((Date.now() - date.getTime()) / 60000);
+  if (diffMin < 1) return "เมื่อกี้";
+  if (diffMin < 60) return `${diffMin} นาทีที่แล้ว`;
+  return `${Math.floor(diffMin / 60)} ชั่วโมงที่แล้ว`;
 }
 
 async function fetchWeather(lat: number, lon: number): Promise<WeatherData> {
@@ -79,6 +98,7 @@ export default function WeatherWidget({ compact = false }: { compact?: boolean }
   const [lastUpdated,   setLastUpdated]   = useState<Date | null>(null);
   const [nextRefreshMs, setNextRefreshMs] = useState<number>(REFRESH_INTERVAL_MS);
   const [refreshing,    setRefreshing]    = useState(false);
+  const [relTime,       setRelTime]       = useState("");
 
   const currentLocRef = useRef<{ lat: number; lon: number; label: string }>(
     { lat: LOCATIONS[0].lat, lon: LOCATIONS[0].lon, label: LOCATIONS[0].label }
@@ -91,7 +111,9 @@ export default function WeatherWidget({ compact = false }: { compact?: boolean }
     currentLocRef.current = { lat, lon, label };
     try {
       setWeather(await fetchWeather(lat, lon));
-      setLastUpdated(new Date());
+      const now = new Date();
+      setLastUpdated(now);
+      setRelTime(relativeTime(now));
       setNextRefreshMs(REFRESH_INTERVAL_MS);
     } catch { if (!silent) setError("ไม่สามารถดึงข้อมูลอากาศได้"); }
     finally  { setLoading(false); setRefreshing(false); }
@@ -113,31 +135,30 @@ export default function WeatherWidget({ compact = false }: { compact?: boolean }
 
   const handleManualRefresh = () => {
     const { lat, lon, label } = currentLocRef.current;
-    if (lat) load(lat, lon, label);
+    if (lat) load(lat, lon, label, true);
   };
 
-  // Initial fetch
   useEffect(() => {
     const d = LOCATIONS[0];
     load(d.lat, d.lon, d.label);
   }, [load]);
 
-  // Auto-refresh every 10 minutes
   useEffect(() => {
     const interval = setInterval(() => {
       const { lat, lon, label } = currentLocRef.current;
-      if (lat) load(lat, lon, label, true); // silent = don't show loading skeleton
+      if (lat) load(lat, lon, label, true);
     }, REFRESH_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [load]);
 
-  // Countdown timer — updates every second
+  // Countdown + relative-time ticker
   useEffect(() => {
     if (!lastUpdated) return;
     const tick = setInterval(() => {
       const elapsed = Date.now() - lastUpdated.getTime();
       setNextRefreshMs(Math.max(0, REFRESH_INTERVAL_MS - elapsed));
-    }, 1000);
+      setRelTime(relativeTime(lastUpdated));
+    }, 30000); // update every 30s
     return () => clearInterval(tick);
   }, [lastUpdated]);
 
@@ -147,47 +168,78 @@ export default function WeatherWidget({ compact = false }: { compact?: boolean }
     ? Math.min(100, ((REFRESH_INTERVAL_MS - nextRefreshMs) / REFRESH_INTERVAL_MS) * 100)
     : 0;
 
+  // Rain-soon alert: any of the next 2 hourly slots has prob >= 60
+  const rainSoonAlert = weather?.hourlyRain.slice(0, 2).some(h => h.prob >= 60) ?? false;
+
+  /* ===== COMPACT (sidebar) ===== */
   if (compact) {
     return (
-      <div className="bg-gradient-to-br from-green-50 to-teal-50 border border-green-200 rounded-2xl p-4">
-        <p className="text-[11px] font-semibold text-green-700 mb-2 flex items-center gap-1.5">
-          🌤 สภาพอากาศวันนี้
-          {!loading && weather && (
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
-            </span>
-          )}
-        </p>
+      <div className="bg-gradient-to-br from-green-900/60 to-teal-900/40 border border-white/10 rounded-2xl p-3">
+        {/* Rain alert banner */}
+        {rainSoonAlert && (
+          <div className="mb-2 flex items-center gap-1.5 bg-orange-500/90 rounded-xl px-2.5 py-1.5">
+            <span className="text-sm">⚠️</span>
+            <p className="text-[10px] font-bold text-white leading-tight">งดพ่นยาทันที<br/>ฝนกำลังจะตก</p>
+          </div>
+        )}
+
+        {/* Header row */}
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-[11px] font-semibold text-green-300 flex items-center gap-1">
+            🌤 สภาพอากาศ
+            {!loading && weather && (
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
+              </span>
+            )}
+          </p>
+          <button
+            type="button"
+            onClick={handleManualRefresh}
+            disabled={loading || refreshing}
+            title="รีเฟรชสภาพอากาศ"
+            className="p-1 rounded-lg text-white/40 hover:text-green-300 hover:bg-white/10 transition-colors disabled:opacity-30 cursor-pointer"
+          >
+            <RefreshCw className={`w-3 h-3 ${refreshing ? "animate-spin" : ""}`} />
+          </button>
+        </div>
+
         {loading ? (
-          <div className="h-10 bg-green-100 rounded-xl animate-pulse" />
+          <div className="h-10 bg-white/10 rounded-xl animate-pulse" />
         ) : error ? (
-          <p className="text-[11px] text-red-500">ดึงข้อมูลไม่ได้</p>
+          <p className="text-[11px] text-red-400">ดึงข้อมูลไม่ได้</p>
         ) : weather ? (
           <>
             <div className="flex items-end gap-2 mb-2">
-              <span className="text-2xl font-bold text-gray-800">{weather.temperature}°C</span>
-              <span className="text-xs text-gray-500 mb-0.5">{weatherLabel(weather.weatherCode)}</span>
+              <span className="text-xl">{weatherEmoji(weather.weatherCode)}</span>
+              <span className="text-2xl font-bold text-white">{weather.temperature}°C</span>
+              <span className="text-[10px] text-white/50 mb-0.5">{weatherLabel(weather.weatherCode)}</span>
             </div>
-            <div className="flex gap-3 text-[11px] text-gray-500">
+            <div className="flex gap-3 text-[10px] text-white/50 mb-2">
               <span>💧 {weather.humidity}%</span>
               <span>🌬 {weather.windSpeed} km/h</span>
               <span>🌧 {weather.precipitationProbabilityMax}%</span>
             </div>
-            <p className="text-[11px] text-gray-400 mt-1.5">{locationLabel}</p>
+            {/* Last updated */}
+            {relTime && (
+              <p className="text-[9px] text-white/30 mt-1">
+                อัปเดตเมื่อ {relTime} · {locationLabel}
+              </p>
+            )}
           </>
         ) : null}
       </div>
     );
   }
 
+  /* ===== FULL (standalone, e.g. on Dashboard) ===== */
   return (
-    <div className="bg-card border border-border rounded-lg p-5 shadow-xs">
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
+    <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-            สภาพอากาศและการรดน้ำ
-            {/* Live pulsing dot */}
+          <h2 className="text-sm font-bold text-gray-800 flex items-center gap-2">
+            🌤 สภาพอากาศและการรดน้ำ
             {!loading && weather && (
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
@@ -195,101 +247,112 @@ export default function WeatherWidget({ compact = false }: { compact?: boolean }
               </span>
             )}
           </h2>
-          {weather && <p className="text-xs text-muted-foreground mt-0.5">{weatherLabel(weather.dailyWeatherCode)}</p>}
+          {weather && <p className="text-xs text-gray-400 mt-0.5">{weatherLabel(weather.dailyWeatherCode)}</p>}
         </div>
         <div className="flex items-center gap-2">
           <select value={locationLabel} onChange={handleLocationChange}
-            className="border border-border rounded px-2.5 py-1.5 text-xs bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40">
+            className="border border-gray-200 rounded-xl px-2.5 py-1.5 text-xs bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-200">
             {LOCATIONS.map(l => <option key={l.label} value={l.label}>{l.label}</option>)}
           </select>
           <button
+            type="button"
             onClick={handleManualRefresh}
             disabled={loading || refreshing}
-            className="text-xs text-muted-foreground hover:text-primary transition-colors disabled:opacity-40 px-1 flex items-center gap-1"
-            title="รีเฟรช">
-            {refreshing ? (
-              <span className="inline-block w-3 h-3 border border-primary border-t-transparent rounded-full animate-spin" />
-            ) : null}
-            รีเฟรช
+            title="รีเฟรช"
+            className="w-8 h-8 rounded-xl bg-gray-100 hover:bg-green-100 flex items-center justify-center transition-colors disabled:opacity-40 cursor-pointer"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-gray-500 hover:text-green-600 ${refreshing ? "animate-spin" : ""}`} />
           </button>
         </div>
       </div>
 
+      {/* Rain alert */}
+      {rainSoonAlert && weather && (
+        <div className="mb-4 flex items-center gap-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl px-4 py-3">
+          <span className="text-2xl shrink-0">⚠️</span>
+          <div>
+            <p className="text-sm font-bold text-white">งดพ่นยาทันที — ฝนกำลังจะตก</p>
+            <p className="text-xs text-white/80 mt-0.5">
+              โอกาสฝนตกในอีก 1–2 ชั่วโมง {Math.max(...weather.hourlyRain.slice(0, 2).map(h => h.prob))}%
+            </p>
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="space-y-3">
-          <div className="h-12 bg-muted/50 rounded animate-pulse" />
+          <div className="h-12 bg-gray-100 rounded-2xl animate-pulse" />
           <div className="grid grid-cols-3 gap-3">
-            {[...Array(3)].map((_, i) => <div key={i} className="h-16 bg-muted/50 rounded animate-pulse" />)}
+            {[...Array(3)].map((_, i) => <div key={i} className="h-16 bg-gray-100 rounded-2xl animate-pulse" />)}
           </div>
         </div>
       ) : error ? (
-        <p className="text-sm text-destructive py-2">{error}</p>
+        <p className="text-sm text-red-500 py-2">{error}</p>
       ) : weather && advice ? (
         <div className="space-y-4">
-          <div className="flex items-start gap-3 px-4 py-3 bg-muted/30 rounded border border-border">
+          <div className={`flex items-start gap-3 px-4 py-3 rounded-2xl ${
+            advice.bar === "bg-blue-500" ? "bg-blue-50 border border-blue-100" :
+            advice.bar === "bg-amber-500" ? "bg-amber-50 border border-amber-100" :
+            "bg-green-50 border border-green-100"
+          }`}>
+            <span className="text-2xl shrink-0">{weatherEmoji(weather.weatherCode)}</span>
             <div>
-              <p className={`text-sm font-semibold ${advice.color}`}>{advice.level}</p>
-              <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{advice.detail}</p>
+              <p className={`text-sm font-bold ${advice.color}`}>{advice.level}</p>
+              <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{advice.detail}</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3 text-sm">
+          <div className="grid grid-cols-3 gap-3">
             {[
-              { label: "อุณหภูมิ",   value: `${weather.temperature}°C` },
-              { label: "ความชื้น",   value: `${weather.humidity}%`      },
-              { label: "ความเร็วลม", value: `${weather.windSpeed} km/h` },
+              { label: "อุณหภูมิ",   value: `${weather.temperature}°C`, emoji: "🌡️" },
+              { label: "ความชื้น",   value: `${weather.humidity}%`,      emoji: "💧" },
+              { label: "ความเร็วลม", value: `${weather.windSpeed} km/h`, emoji: "🌬️" },
             ].map(s => (
-              <div key={s.label} className="bg-muted/30 rounded px-3 py-2.5 border border-border text-center">
-                <p className="text-base font-semibold text-foreground">{s.value}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
+              <div key={s.label} className="bg-gray-50 rounded-2xl px-3 py-3 text-center border border-gray-100">
+                <div className="text-xl mb-1">{s.emoji}</div>
+                <p className="text-base font-bold text-gray-800">{s.value}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{s.label}</p>
               </div>
             ))}
           </div>
 
           <div>
-            <div className="flex justify-between text-xs mb-1.5">
-              <span className="text-muted-foreground font-medium">โอกาสฝนตกสูงสุดวันนี้</span>
-              <span className={`font-semibold ${advice.color}`}>{maxProb}%</span>
+            <div className="flex justify-between text-xs mb-2">
+              <span className="text-gray-500 font-medium">โอกาสฝนตกสูงสุดวันนี้</span>
+              <span className={`font-bold ${advice.color}`}>{maxProb}%</span>
             </div>
-            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
               <div className={`h-full rounded-full transition-all duration-700 ${advice.bar}`} style={{ width: `${maxProb}%` }} />
             </div>
           </div>
 
           {weather.hourlyRain.length > 0 && (
             <div>
-              <p className="text-xs text-muted-foreground font-medium mb-2">โอกาสฝนรายชั่วโมง</p>
-              <div className="flex items-end gap-1.5 h-14 bg-muted/20 rounded px-2 py-1.5 border border-border">
+              <p className="text-xs text-gray-400 font-medium mb-2">โอกาสฝนรายชั่วโมง</p>
+              <div className="flex items-end gap-1.5 h-14 bg-gray-50 rounded-2xl px-3 py-2 border border-gray-100">
                 {weather.hourlyRain.map(({ hour, prob }) => (
                   <div key={hour} className="flex flex-col items-center gap-0.5 flex-1">
                     <div
-                      className={`w-full rounded-sm transition-all ${prob >= 70 ? "bg-blue-400" : prob >= 40 ? "bg-amber-400" : "bg-primary/50"}`}
+                      className={`w-full rounded-sm transition-all ${prob >= 70 ? "bg-blue-400" : prob >= 40 ? "bg-amber-400" : "bg-green-400/60"}`}
                       style={{ height: `${Math.max(3, (prob / 100) * 36)}px` }}
                       title={`${hour}:00 — ${prob}%`}
                     />
-                    <span className="text-[9px] text-muted-foreground">{hour}</span>
+                    <span className="text-[9px] text-gray-400">{hour}</span>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Footer: timestamp + auto-refresh progress */}
           <div className="space-y-1.5">
-            <div className="flex justify-between items-center text-[10px] text-muted-foreground">
+            <div className="flex justify-between items-center text-[10px] text-gray-400">
               <span>
-                {locationLabel} · อัพเดต {lastUpdated?.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })} น.
+                {locationLabel} · อัปเดตเมื่อ {relTime || lastUpdated?.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })}
               </span>
-              <span className="tabular-nums">
-                รีเฟรชอัตโนมัติใน {formatCountdown(nextRefreshMs)}
-              </span>
+              <span className="tabular-nums">รีเฟรชอัตโนมัติใน {formatCountdown(nextRefreshMs)}</span>
             </div>
-            {/* Auto-refresh progress bar */}
-            <div className="h-0.5 bg-muted rounded-full overflow-hidden">
-              <div
-                className="h-full bg-primary/40 rounded-full transition-all duration-1000"
-                style={{ width: `${progressPct}%` }}
-              />
+            <div className="h-0.5 bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-full bg-green-400/50 rounded-full transition-all duration-1000" style={{ width: `${progressPct}%` }} />
             </div>
           </div>
         </div>
