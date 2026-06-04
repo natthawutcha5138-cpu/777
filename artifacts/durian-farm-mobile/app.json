@@ -11,12 +11,15 @@
     "splash": {
       "image": "./assets/images/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#f2ede6"
     },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.replit.durianfarmmobile"
     },
-    "android": {},
+    "android": {
+      "package": "com.replit.durianfarmmobile"
+    },
     "web": {
       "favicon": "./assets/images/icon.png"
     },

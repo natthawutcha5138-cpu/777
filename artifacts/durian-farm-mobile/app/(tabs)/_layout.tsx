@@ -3,22 +3,34 @@ import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { Tabs } from "expo-router";
 import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 import { SymbolView } from "expo-symbols";
-import { Feather } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Platform, StyleSheet, View, useColorScheme } from "react-native";
 
 import { useColors } from "@/hooks/useColors";
 
-// IMPORTANT: iOS 26 uses NativeTabs for native tabs with liquid glass support.
-// NativeTabs intentionally does NOT use custom design tokens — liquid glass
-// is a system-level appearance provided by iOS and cannot be overridden.
-// Custom brand colors are applied only on the ClassicTabLayout path (older iOS / Android / web).
 function NativeTabLayout() {
   return (
     <NativeTabs>
       <NativeTabs.Trigger name="index">
         <Icon sf={{ default: "house", selected: "house.fill" }} />
-        <Label>Home</Label>
+        <Label>หน้าหลัก</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="accounting">
+        <Icon sf={{ default: "dollarsign.circle", selected: "dollarsign.circle.fill" }} />
+        <Label>บัญชี</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="plots">
+        <Icon sf={{ default: "leaf", selected: "leaf.fill" }} />
+        <Label>แปลง</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="fertilizer">
+        <Icon sf={{ default: "flask", selected: "flask.fill" }} />
+        <Label>ปุ๋ย</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="forecast">
+        <Icon sf={{ default: "chart.line.uptrend.xyaxis", selected: "chart.line.uptrend.xyaxis.circle.fill" }} />
+        <Label>พยากรณ์</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -36,7 +48,7 @@ function ClassicTabLayout() {
       screenOptions={{
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.mutedForeground,
-        headerShown: true,
+        headerShown: false,
         tabBarStyle: {
           position: "absolute",
           backgroundColor: isIOS ? "transparent" : colors.background,
@@ -53,24 +65,68 @@ function ClassicTabLayout() {
               style={StyleSheet.absoluteFill}
             />
           ) : isWeb ? (
-            <View
-              style={[
-                StyleSheet.absoluteFill,
-                { backgroundColor: colors.background },
-              ]}
-            />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.background }]} />
           ) : null,
+        tabBarLabelStyle: { fontSize: 10, fontFamily: "Inter_500Medium" },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
-          tabBarIcon: ({ color }) =>
+          title: "หน้าหลัก",
+          tabBarIcon: ({ color, size }) =>
             isIOS ? (
-              <SymbolView name="house" tintColor={color} size={24} />
+              <SymbolView name="house" tintColor={color} size={size} />
             ) : (
-              <Feather name="home" size={22} color={color} />
+              <Ionicons name="home-outline" size={size} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="accounting"
+        options={{
+          title: "บัญชี",
+          tabBarIcon: ({ color, size }) =>
+            isIOS ? (
+              <SymbolView name="dollarsign.circle" tintColor={color} size={size} />
+            ) : (
+              <Ionicons name="receipt-outline" size={size} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="plots"
+        options={{
+          title: "แปลง",
+          tabBarIcon: ({ color, size }) =>
+            isIOS ? (
+              <SymbolView name="leaf" tintColor={color} size={size} />
+            ) : (
+              <Ionicons name="leaf-outline" size={size} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="fertilizer"
+        options={{
+          title: "ปุ๋ย",
+          tabBarIcon: ({ color, size }) =>
+            isIOS ? (
+              <SymbolView name="flask" tintColor={color} size={size} />
+            ) : (
+              <Ionicons name="flask-outline" size={size} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="forecast"
+        options={{
+          title: "พยากรณ์",
+          tabBarIcon: ({ color, size }) =>
+            isIOS ? (
+              <SymbolView name="chart.line.uptrend.xyaxis" tintColor={color} size={size} />
+            ) : (
+              <Ionicons name="trending-up-outline" size={size} color={color} />
             ),
         }}
       />
