@@ -9,7 +9,7 @@ export const plotsTable = pgTable("plots", {
   treeCount: integer("tree_count").notNull(),
   variety: text("variety").notNull(),
   treeAge: integer("tree_age").notNull(),
-  plantedDate: date("planted_date").notNull(),
+  plantedDate: date("planted_date", { mode: "string" }).notNull(),
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
