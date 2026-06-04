@@ -11,7 +11,7 @@ export interface PlotInput {
     treeCount: number;
     variety: string;
     treeAge: number;
-    plantedDate: Date;
+    plantedDate: string;
     notes?: string;
 }
 //# sourceMappingURL=plotInput.d.ts.map

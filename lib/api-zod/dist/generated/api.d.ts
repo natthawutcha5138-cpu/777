@@ -27,7 +27,7 @@ export declare const ListPlotsResponseItem: zod.ZodObject<{
     treeCount: zod.ZodNumber;
     variety: zod.ZodString;
     treeAge: zod.ZodNumber;
-    plantedDate: zod.ZodDate;
+    plantedDate: zod.ZodString;
     notes: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
     status: zod.ZodOptional<zod.ZodString>;
     density: zod.ZodOptional<zod.ZodNumber>;
@@ -39,7 +39,7 @@ export declare const ListPlotsResponseItem: zod.ZodObject<{
     treeCount: number;
     variety: string;
     treeAge: number;
-    plantedDate: Date;
+    plantedDate: string;
     createdAt: Date;
     status?: string | undefined;
     notes?: string | null | undefined;
@@ -51,7 +51,7 @@ export declare const ListPlotsResponseItem: zod.ZodObject<{
     treeCount: number;
     variety: string;
     treeAge: number;
-    plantedDate: Date;
+    plantedDate: string;
     createdAt: Date;
     status?: string | undefined;
     notes?: string | null | undefined;
@@ -64,7 +64,7 @@ export declare const ListPlotsResponse: zod.ZodArray<zod.ZodObject<{
     treeCount: zod.ZodNumber;
     variety: zod.ZodString;
     treeAge: zod.ZodNumber;
-    plantedDate: zod.ZodDate;
+    plantedDate: zod.ZodString;
     notes: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
     status: zod.ZodOptional<zod.ZodString>;
     density: zod.ZodOptional<zod.ZodNumber>;
@@ -76,7 +76,7 @@ export declare const ListPlotsResponse: zod.ZodArray<zod.ZodObject<{
     treeCount: number;
     variety: string;
     treeAge: number;
-    plantedDate: Date;
+    plantedDate: string;
     createdAt: Date;
     status?: string | undefined;
     notes?: string | null | undefined;
@@ -88,7 +88,7 @@ export declare const ListPlotsResponse: zod.ZodArray<zod.ZodObject<{
     treeCount: number;
     variety: string;
     treeAge: number;
-    plantedDate: Date;
+    plantedDate: string;
     createdAt: Date;
     status?: string | undefined;
     notes?: string | null | undefined;
@@ -103,7 +103,7 @@ export declare const CreatePlotBody: zod.ZodObject<{
     treeCount: zod.ZodNumber;
     variety: zod.ZodString;
     treeAge: zod.ZodNumber;
-    plantedDate: zod.ZodDate;
+    plantedDate: zod.ZodString;
     notes: zod.ZodOptional<zod.ZodString>;
 }, "strip", zod.ZodTypeAny, {
     name: string;
@@ -111,7 +111,7 @@ export declare const CreatePlotBody: zod.ZodObject<{
     treeCount: number;
     variety: string;
     treeAge: number;
-    plantedDate: Date;
+    plantedDate: string;
     notes?: string | undefined;
 }, {
     name: string;
@@ -119,7 +119,7 @@ export declare const CreatePlotBody: zod.ZodObject<{
     treeCount: number;
     variety: string;
     treeAge: number;
-    plantedDate: Date;
+    plantedDate: string;
     notes?: string | undefined;
 }>;
 /**
@@ -139,7 +139,7 @@ export declare const GetPlotResponse: zod.ZodObject<{
     treeCount: zod.ZodNumber;
     variety: zod.ZodString;
     treeAge: zod.ZodNumber;
-    plantedDate: zod.ZodDate;
+    plantedDate: zod.ZodString;
     notes: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
     status: zod.ZodOptional<zod.ZodString>;
     density: zod.ZodOptional<zod.ZodNumber>;
@@ -151,7 +151,7 @@ export declare const GetPlotResponse: zod.ZodObject<{
     treeCount: number;
     variety: string;
     treeAge: number;
-    plantedDate: Date;
+    plantedDate: string;
     createdAt: Date;
     status?: string | undefined;
     notes?: string | null | undefined;
@@ -163,7 +163,7 @@ export declare const GetPlotResponse: zod.ZodObject<{
     treeCount: number;
     variety: string;
     treeAge: number;
-    plantedDate: Date;
+    plantedDate: string;
     createdAt: Date;
     status?: string | undefined;
     notes?: string | null | undefined;
@@ -185,7 +185,7 @@ export declare const UpdatePlotBody: zod.ZodObject<{
     treeCount: zod.ZodOptional<zod.ZodNumber>;
     variety: zod.ZodOptional<zod.ZodString>;
     treeAge: zod.ZodOptional<zod.ZodNumber>;
-    plantedDate: zod.ZodOptional<zod.ZodDate>;
+    plantedDate: zod.ZodOptional<zod.ZodString>;
     notes: zod.ZodOptional<zod.ZodString>;
 }, "strip", zod.ZodTypeAny, {
     name?: string | undefined;
@@ -193,7 +193,7 @@ export declare const UpdatePlotBody: zod.ZodObject<{
     treeCount?: number | undefined;
     variety?: string | undefined;
     treeAge?: number | undefined;
-    plantedDate?: Date | undefined;
+    plantedDate?: string | undefined;
     notes?: string | undefined;
 }, {
     name?: string | undefined;
@@ -201,7 +201,7 @@ export declare const UpdatePlotBody: zod.ZodObject<{
     treeCount?: number | undefined;
     variety?: string | undefined;
     treeAge?: number | undefined;
-    plantedDate?: Date | undefined;
+    plantedDate?: string | undefined;
     notes?: string | undefined;
 }>;
 export declare const UpdatePlotResponse: zod.ZodObject<{
@@ -211,7 +211,7 @@ export declare const UpdatePlotResponse: zod.ZodObject<{
     treeCount: zod.ZodNumber;
     variety: zod.ZodString;
     treeAge: zod.ZodNumber;
-    plantedDate: zod.ZodDate;
+    plantedDate: zod.ZodString;
     notes: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
     status: zod.ZodOptional<zod.ZodString>;
     density: zod.ZodOptional<zod.ZodNumber>;
@@ -223,7 +223,7 @@ export declare const UpdatePlotResponse: zod.ZodObject<{
     treeCount: number;
     variety: string;
     treeAge: number;
-    plantedDate: Date;
+    plantedDate: string;
     createdAt: Date;
     status?: string | undefined;
     notes?: string | null | undefined;
@@ -235,7 +235,7 @@ export declare const UpdatePlotResponse: zod.ZodObject<{
     treeCount: number;
     variety: string;
     treeAge: number;
-    plantedDate: Date;
+    plantedDate: string;
     createdAt: Date;
     status?: string | undefined;
     notes?: string | null | undefined;

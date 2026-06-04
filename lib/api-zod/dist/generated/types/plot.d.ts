@@ -15,7 +15,7 @@ export interface Plot {
     variety: string;
     /** Tree age in years */
     treeAge: number;
-    plantedDate: Date;
+    plantedDate: string;
     /** @nullable */
     notes?: string | null;
     /** Auto-calculated status based on tree age */

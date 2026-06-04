@@ -27,7 +27,7 @@ export const ListPlotsResponseItem = zod.object({
   "treeCount": zod.number(),
   "variety": zod.string().describe('หมอนทอง | ชะนี | กระดุม | พวงมณี | ก้านยาว'),
   "treeAge": zod.number().describe('Tree age in years'),
-  "plantedDate": zod.coerce.date(),
+  "plantedDate": zod.string(),
   "notes": zod.string().nullish(),
   "status": zod.string().optional().describe('Auto-calculated status based on tree age'),
   "density": zod.number().optional().describe('Trees per rai'),
@@ -45,7 +45,7 @@ export const CreatePlotBody = zod.object({
   "treeCount": zod.number(),
   "variety": zod.string(),
   "treeAge": zod.number(),
-  "plantedDate": zod.coerce.date(),
+  "plantedDate": zod.string(),
   "notes": zod.string().optional()
 })
 
@@ -64,7 +64,7 @@ export const GetPlotResponse = zod.object({
   "treeCount": zod.number(),
   "variety": zod.string().describe('หมอนทอง | ชะนี | กระดุม | พวงมณี | ก้านยาว'),
   "treeAge": zod.number().describe('Tree age in years'),
-  "plantedDate": zod.coerce.date(),
+  "plantedDate": zod.string(),
   "notes": zod.string().nullish(),
   "status": zod.string().optional().describe('Auto-calculated status based on tree age'),
   "density": zod.number().optional().describe('Trees per rai'),
@@ -85,7 +85,7 @@ export const UpdatePlotBody = zod.object({
   "treeCount": zod.number().optional(),
   "variety": zod.string().optional(),
   "treeAge": zod.number().optional(),
-  "plantedDate": zod.coerce.date().optional(),
+  "plantedDate": zod.string().optional(),
   "notes": zod.string().optional()
 })
 
@@ -96,7 +96,7 @@ export const UpdatePlotResponse = zod.object({
   "treeCount": zod.number(),
   "variety": zod.string().describe('หมอนทอง | ชะนี | กระดุม | พวงมณี | ก้านยาว'),
   "treeAge": zod.number().describe('Tree age in years'),
-  "plantedDate": zod.coerce.date(),
+  "plantedDate": zod.string(),
   "notes": zod.string().nullish(),
   "status": zod.string().optional().describe('Auto-calculated status based on tree age'),
   "density": zod.number().optional().describe('Trees per rai'),
