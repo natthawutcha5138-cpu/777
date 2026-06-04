@@ -141,8 +141,50 @@ export default function Dashboard() {
     },
   ];
 
+  const now = new Date();
+  const hour = now.getHours();
+  const greeting = hour < 12 ? "สวัสดีตอนเช้า" : hour < 17 ? "สวัสดีตอนบ่าย" : "สวัสดีตอนเย็น";
+
   return (
     <div className="space-y-6 pb-10">
+
+      {/* ===== Farm Photo Hero Banner ===== */}
+      <div className="relative h-44 rounded-3xl overflow-hidden shadow-lg">
+        <img
+          src="/images/tropical2.jpg"
+          alt="สวนทุเรียน"
+          className="w-full h-full object-cover object-center"
+          onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+        />
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-green-900/75 via-green-800/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+
+        {/* Floating content */}
+        <div className="absolute inset-0 flex items-center px-8">
+          <div>
+            <p className="text-white/70 text-xs font-medium mb-1 tracking-widest uppercase">{greeting} 🌿</p>
+            <h2 className="text-2xl font-extrabold text-white drop-shadow-md">สวนทุเรียนของฉัน</h2>
+            <p className="text-white/75 text-sm mt-1">
+              {now.toLocaleDateString("th-TH", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+            </p>
+          </div>
+        </div>
+
+        {/* Right: photo strip */}
+        <div className="absolute right-5 top-1/2 -translate-y-1/2 flex gap-2 max-sm:hidden">
+          {["/images/durian-close.jpg", "/images/thai-farm.jpg"].map((src, i) => (
+            <div key={i} className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-white/30 shadow-lg">
+              <img
+                src={src}
+                alt=""
+                className="w-full h-full object-cover"
+                onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* ===== Stat Cards ===== */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">

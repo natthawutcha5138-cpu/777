@@ -1,0 +1,1 @@
+- [Real farm photos](farm-photos.md) — real durian/farm images stored in `artifacts/durian-farm/public/images/`; Unsplash CDN works but Wikimedia/Pixabay blocked in this sandbox.

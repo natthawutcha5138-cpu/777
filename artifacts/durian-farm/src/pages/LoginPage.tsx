@@ -1,5 +1,4 @@
 import { useState } from "react";
-import type { AuthUser } from "@/hooks/useAuth";
 
 interface LoginPageProps {
   onLogin:    (username: string, password: string) => Promise<string | null>;
@@ -28,41 +27,98 @@ export default function LoginPage({ onLogin, onRegister }: LoginPageProps) {
   }
 
   return (
-    <div
-      className="min-h-screen flex"
-      style={{ background: "linear-gradient(135deg, #f0fdf4 0%, #fdf2f8 50%, #fefce8 100%)" }}
-    >
-      {/* Left panel — branding */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center p-12 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-green-400/10 via-transparent to-yellow-200/20" />
+    <div className="min-h-screen flex">
 
-        <div className="relative z-10 text-center max-w-sm">
-          <div className="w-28 h-28 rounded-3xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-6xl shadow-2xl shadow-green-200 mx-auto mb-8">
-            🌳
+      {/* ===== LEFT PANEL — real farm photo ===== */}
+      <div className="hidden lg:flex lg:w-1/2 flex-col relative overflow-hidden">
+
+        {/* Background: real durian farm photo */}
+        <img
+          src="/images/farm-wide.jpg"
+          alt="สวนทุเรียน"
+          className="absolute inset-0 w-full h-full object-cover"
+          onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+        />
+
+        {/* Green overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-br from-green-900/75 via-green-800/60 to-emerald-700/50" />
+
+        {/* Soft vignette at edges */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10" />
+
+        {/* Content */}
+        <div className="relative z-10 flex flex-col h-full p-10">
+
+          {/* Top: Logo + app name */}
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-2xl shadow-lg">
+              🌳
+            </div>
+            <div>
+              <h1 className="font-bold text-white text-lg leading-tight">ทุเรียนสมาร์ทฟาร์ม</h1>
+              <p className="text-white/60 text-xs">AI Farm Management</p>
+            </div>
           </div>
-          <h1 className="text-4xl font-bold text-green-700 mb-3">ทุเรียนสมาร์ทฟาร์ม</h1>
-          <p className="text-base text-gray-500 mb-10 leading-relaxed">
-            ระบบบริหารจัดการสวนทุเรียนอัจฉริยะ<br />ด้วย AI ครบวงจร
-          </p>
 
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { icon: "📊", label: "ติดตามรายรับ-จ่าย" },
-              { icon: "🌱", label: "คำนวณปุ๋ยอัตโนมัติ" },
-              { icon: "🤖", label: "AI วิเคราะห์สวน" },
-            ].map((f) => (
-              <div key={f.label} className="bg-white/60 backdrop-blur rounded-2xl p-4 text-center shadow-sm border border-white/80">
-                <div className="text-3xl mb-2">{f.icon}</div>
-                <p className="text-xs text-gray-600 font-medium leading-tight">{f.label}</p>
-              </div>
+          {/* Center: Main headline */}
+          <div className="flex-1 flex flex-col justify-center">
+            <p className="text-white/70 text-sm font-medium mb-3 tracking-wide uppercase">ยินดีต้อนรับ</p>
+            <h2 className="text-4xl font-extrabold text-white leading-tight mb-4">
+              บริหารสวนทุเรียน<br />
+              <span className="text-green-300">อัจฉริยะ</span> ด้วย AI
+            </h2>
+            <p className="text-white/70 text-sm leading-relaxed max-w-xs">
+              ติดตามรายรับ-รายจ่าย คำนวณปุ๋ย พยากรณ์ฤดูกาล<br />
+              และวิเคราะห์สวนของคุณแบบเรียลไทม์
+            </p>
+
+            {/* Photo strip — real durian/farm photos */}
+            <div className="flex gap-2.5 mt-8">
+              {[
+                { src: "/images/durian-close.jpg", label: "ผลทุเรียน" },
+                { src: "/images/tropical-farm.jpg", label: "สวนทุเรียน" },
+                { src: "/images/thai-farm.jpg", label: "ภาคตะวันออก" },
+              ].map((p) => (
+                <div key={p.src} className="flex-1 rounded-2xl overflow-hidden border border-white/20 shadow-lg">
+                  <div className="relative h-20">
+                    <img
+                      src={p.src}
+                      alt={p.label}
+                      className="w-full h-full object-cover"
+                      onError={e => {
+                        const el = e.target as HTMLImageElement;
+                        el.style.display = "none";
+                        const parent = el.parentElement!;
+                        parent.style.background = "rgba(255,255,255,0.1)";
+                        parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-2xl">🌳</div>`;
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <p className="absolute bottom-1.5 left-2 text-[10px] text-white font-semibold drop-shadow">{p.label}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Bottom: Feature chips */}
+          <div className="flex flex-wrap gap-2">
+            {["📊 บัญชีรายรับ-จ่าย", "🌿 คำนวณปุ๋ยอัตโนมัติ", "🌧️ พยากรณ์อากาศ", "📈 วิเคราะห์ผลผลิต"].map(f => (
+              <span key={f} className="text-xs text-white/80 bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1">
+                {f}
+              </span>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Right panel — form */}
-      <div className="flex-1 flex items-center justify-center p-6">
+      {/* ===== RIGHT PANEL — login form ===== */}
+      <div
+        className="flex-1 flex items-center justify-center p-6 min-h-screen"
+        style={{ background: "linear-gradient(135deg, #f0fdf4 0%, #fdf2f8 50%, #fefce8 100%)" }}
+      >
         <div className="w-full max-w-md">
+
           {/* Mobile logo */}
           <div className="flex items-center justify-center gap-3 mb-8 lg:hidden">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-2xl shadow-md">
@@ -76,6 +132,9 @@ export default function LoginPage({ onLogin, onRegister }: LoginPageProps) {
 
           <div className="bg-white rounded-3xl shadow-xl shadow-green-100/50 p-8">
             <div className="mb-7 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-3xl shadow-lg shadow-green-200 mx-auto mb-4">
+                🌳
+              </div>
               <h2 className="text-2xl font-bold text-gray-800">
                 {mode === "login" ? "เข้าสู่ระบบ" : "สมัครสมาชิก"}
               </h2>
@@ -89,9 +148,7 @@ export default function LoginPage({ onLogin, onRegister }: LoginPageProps) {
             <form onSubmit={handleSubmit} className="space-y-4">
               {mode === "register" && (
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    ชื่อที่แสดงในระบบ
-                  </label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">ชื่อที่แสดงในระบบ</label>
                   <input
                     type="text"
                     value={displayName}
@@ -104,9 +161,7 @@ export default function LoginPage({ onLogin, onRegister }: LoginPageProps) {
               )}
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  ชื่อผู้ใช้
-                </label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">ชื่อผู้ใช้</label>
                 <input
                   type="text"
                   value={username}
@@ -119,9 +174,7 @@ export default function LoginPage({ onLogin, onRegister }: LoginPageProps) {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  รหัสผ่าน
-                </label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">รหัสผ่าน</label>
                 <input
                   type="password"
                   value={password}
