@@ -1,0 +1,3 @@
+{
+  "buildCommand": "cd ../.. && pnpm --filter @workspace/api-zod run build && cd artifacts/api-server && pnpm run build"
+}
