@@ -20,14 +20,28 @@ export default function Forecast() {
   return (
     <div className="space-y-5 pb-10">
 
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-200">
-          <BarChart3 className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">พยากรณ์ฤดูกาลหน้า</h1>
-          <p className="text-xs text-gray-400 mt-0.5">คาดการณ์จากแนวโน้ม 3 ปีย้อนหลังและราคาตลาดส่งออก</p>
+      {/* Photo Banner Header */}
+      <div className="relative h-32 rounded-3xl overflow-hidden shadow-lg">
+        <img src="/images/durian-seasons-web.jpg" alt="ทุเรียน 4 ฤดู" className="w-full h-full object-cover object-center" />
+        <div className="absolute inset-0 bg-gradient-to-r from-amber-900/80 via-orange-800/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+        <div className="absolute inset-0 flex items-center justify-between px-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
+              <BarChart3 className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-white drop-shadow">พยากรณ์ฤดูกาลหน้า</h1>
+              <p className="text-xs text-white/70 mt-0.5">คาดการณ์จากแนวโน้ม 3 ปีย้อนหลังและราคาตลาดส่งออก</p>
+            </div>
+          </div>
+          <div className="flex gap-2 max-sm:hidden">
+            {["/images/durian-flower.jpg", "/images/durian-thorns-web.jpg", "/images/durian-tree-web.jpg"].map((src, i) => (
+              <div key={i} className="w-14 h-14 rounded-xl overflow-hidden border-2 border-white/30 shadow">
+                <img src={src} alt="" className="w-full h-full object-cover" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

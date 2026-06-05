@@ -55,24 +55,38 @@ export default function Plots() {
   return (
     <div className="space-y-5 pb-10">
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-700 flex items-center justify-center shadow-lg shadow-green-200">
-            <Sprout className="w-5 h-5 text-white" />
+      {/* Photo Banner Header */}
+      <div className="relative h-32 rounded-3xl overflow-hidden shadow-lg">
+        <img src="/images/durian-on-tree-web.jpg" alt="ทุเรียนบนต้น" className="w-full h-full object-cover object-center" />
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/80 via-green-800/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+        <div className="absolute inset-0 flex items-center justify-between px-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
+              <Sprout className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-white drop-shadow">ข้อมูลแปลง</h1>
+              <p className="text-xs text-white/70 mt-0.5">จัดการข้อมูลแปลงทุเรียนทุกแปลง</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">ข้อมูลแปลง</h1>
-            <p className="text-xs text-gray-400 mt-0.5">จัดการข้อมูลแปลงทุเรียนทุกแปลง</p>
+          <div className="flex items-center gap-3">
+            <div className="flex gap-2 max-sm:hidden">
+              {["/images/durian-tree-web.jpg", "/images/durian-thorns-web.jpg"].map((src, i) => (
+                <div key={i} className="w-14 h-14 rounded-xl overflow-hidden border-2 border-white/30 shadow">
+                  <img src={src} alt="" className="w-full h-full object-cover" />
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => { setShowForm(!showForm); setEditId(null); setForm(emptyForm()); }}
+              className="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white text-sm font-semibold rounded-2xl border border-white/30 transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              {showForm && !editId ? "ยกเลิก" : "เพิ่มแปลง"}
+            </button>
           </div>
         </div>
-        <button
-          onClick={() => { setShowForm(!showForm); setEditId(null); setForm(emptyForm()); }}
-          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white text-sm font-semibold rounded-2xl hover:from-emerald-600 hover:to-green-700 shadow-md shadow-green-200 transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          {showForm && !editId ? "ยกเลิก" : "เพิ่มแปลง"}
-        </button>
       </div>
 
       {/* Summary Cards */}
