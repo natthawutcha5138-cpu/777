@@ -151,7 +151,7 @@ export default function Dashboard() {
       {/* ===== Farm Photo Hero Banner ===== */}
       <div className="relative h-44 rounded-3xl overflow-hidden shadow-lg">
         <img
-          src="/images/tropical2.jpg"
+          src="/images/durian-tree-web.jpg"
           alt="สวนทุเรียน"
           className="w-full h-full object-cover object-center"
           onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
@@ -173,7 +173,7 @@ export default function Dashboard() {
 
         {/* Right: photo strip */}
         <div className="absolute right-5 top-1/2 -translate-y-1/2 flex gap-2 max-sm:hidden">
-          {["/images/durian-close.jpg", "/images/thai-farm.jpg"].map((src, i) => (
+          {["/images/durian-thorns-web.jpg", "/images/durian-seasons-web.jpg"].map((src, i) => (
             <div key={i} className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-white/30 shadow-lg">
               <img
                 src={src}

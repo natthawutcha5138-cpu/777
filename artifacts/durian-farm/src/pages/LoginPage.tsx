@@ -34,7 +34,7 @@ export default function LoginPage({ onLogin, onRegister }: LoginPageProps) {
 
         {/* Background: real durian farm photo */}
         <img
-          src="/images/farm-wide.jpg"
+          src="/images/durian-tree-web.jpg"
           alt="สวนทุเรียน"
           className="absolute inset-0 w-full h-full object-cover"
           onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
@@ -75,9 +75,9 @@ export default function LoginPage({ onLogin, onRegister }: LoginPageProps) {
             {/* Photo strip — real durian/farm photos */}
             <div className="flex gap-2.5 mt-8">
               {[
-                { src: "/images/durian-close.jpg", label: "ผลทุเรียน" },
-                { src: "/images/tropical-farm.jpg", label: "สวนทุเรียน" },
-                { src: "/images/thai-farm.jpg", label: "ภาคตะวันออก" },
+                { src: "/images/durian-thorns-web.jpg", label: "ผลทุเรียน" },
+                { src: "/images/durian-seasons-web.jpg", label: "ทุเรียน 4 สายพันธุ์" },
+                { src: "/images/durian-flower.jpg", label: "ดอกทุเรียน" },
               ].map((p) => (
                 <div key={p.src} className="flex-1 rounded-2xl overflow-hidden border border-white/20 shadow-lg">
                   <div className="relative h-20">
