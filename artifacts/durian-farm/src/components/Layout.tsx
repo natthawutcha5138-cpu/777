@@ -110,6 +110,51 @@ export default function Layout({ children, user, onLogout }: LayoutProps) {
           })}
         </nav>
 
+        {/* Durian farm illustration */}
+        {(sidebarOpen || mobileSidebarOpen) && (
+          <div className="mx-3 mt-2 rounded-2xl overflow-hidden relative" style={{ background: "linear-gradient(180deg, #1a3a20 0%, #2d5a1b 50%, #4a7c2a 100%)" }}>
+            {/* Sky + clouds */}
+            <div className="absolute inset-0 overflow-hidden">
+              <div className="absolute top-1 left-3 w-8 h-3 bg-white/20 rounded-full" />
+              <div className="absolute top-2 left-6 w-5 h-2 bg-white/15 rounded-full" />
+              <div className="absolute top-1 right-4 w-6 h-2.5 bg-white/15 rounded-full" />
+            </div>
+            {/* Scene SVG */}
+            <svg viewBox="0 0 180 110" xmlns="http://www.w3.org/2000/svg" className="w-full">
+              {/* Ground */}
+              <ellipse cx="90" cy="100" rx="95" ry="18" fill="#2d5a1b" />
+              {/* House */}
+              <rect x="20" y="58" width="38" height="30" rx="2" fill="#e8d5a3" />
+              <polygon points="20,58 39,38 58,58" fill="#c0392b" />
+              <rect x="32" y="70" width="10" height="18" rx="1" fill="#8b6914" />
+              <rect x="24" y="63" width="8" height="8" rx="1" fill="#7ecbf5" />
+              <rect x="46" y="63" width="8" height="8" rx="1" fill="#7ecbf5" />
+              {/* Tree left */}
+              <rect x="72" y="65" width="4" height="25" rx="1" fill="#5d4037" />
+              <ellipse cx="74" cy="55" rx="14" ry="16" fill="#2e7d32" />
+              <ellipse cx="74" cy="52" rx="10" ry="12" fill="#388e3c" />
+              {/* Big durian */}
+              <ellipse cx="120" cy="68" rx="22" ry="26" fill="#8d6e28" />
+              <ellipse cx="120" cy="68" rx="19" ry="23" fill="#a0874a" />
+              {/* Durian spikes */}
+              {[[-14,-18],[0,-25],[14,-18],[18,-5],[15,10],[0,20],[-15,10],[-18,-5]].map(([dx,dy], i) => (
+                <polygon key={i}
+                  points={`${120+dx},${68+dy} ${120+dx-3},${68+dy+6} ${120+dx+3},${68+dy+6}`}
+                  fill="#7a5c20"
+                />
+              ))}
+              {/* Durian segments */}
+              <path d="M120,45 Q130,55 120,90 Q110,55 120,45" fill="#c9a84c" opacity="0.5" />
+              <path d="M120,45 Q108,60 102,80 Q118,62 120,45" fill="#c9a84c" opacity="0.4" />
+              <path d="M120,45 Q132,60 138,80 Q122,62 120,45" fill="#c9a84c" opacity="0.4" />
+              {/* Stars/sparkles */}
+              <text x="152" y="30" fontSize="10" fill="#ffd700" opacity="0.8">✦</text>
+              <text x="10" y="35" fontSize="8" fill="#ffd700" opacity="0.6">✦</text>
+              <text x="95" y="20" fontSize="7" fill="#fff" opacity="0.5">✦</text>
+            </svg>
+          </div>
+        )}
+
         {/* Compact Weather — only when expanded */}
         {(sidebarOpen || mobileSidebarOpen) && (
           <div className="px-2 mt-2">

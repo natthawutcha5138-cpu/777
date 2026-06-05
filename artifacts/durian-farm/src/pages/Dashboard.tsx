@@ -5,16 +5,24 @@ import {
 } from "@workspace/api-client-react";
 import { formatBaht, formatNumber, MONTHS_TH, VARIETIES } from "@/lib/utils";
 import {
-  BarChart, Bar, Line, LineChart, ComposedChart,
-  XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
+  BarChart, Bar, Line, ComposedChart,
+  XAxis, YAxis, Tooltip, ResponsiveContainer,
 } from "recharts";
 import { useState } from "react";
 import {
-  TrendingUp, TrendingDown, Plus, MinusCircle, Map, TreePine,
-  Bot, Sprout, Calculator, BarChart3, RefreshCw,
+  TrendingUp, TrendingDown, Calculator, RefreshCw,
+  Bot, Leaf, Sprout, Droplets, CalendarCheck, MessageSquare,
+  Plus, ChevronRight,
 } from "lucide-react";
 
 const currentYear = new Date().getFullYear();
+const BE_YEAR = currentYear + 543;
+
+const spraySchedule = [
+  { task: "ใส่ปุ๋ยครั้งที่ 3", date: "25 พ.ค. 2567", daysLeft: 3,  color: "text-green-600",  bg: "bg-green-50",  icon: "🌿" },
+  { task: "พ่นป้องกันเชื้อรา", date: "28 พ.ค. 2567", daysLeft: 6,  color: "text-orange-500", bg: "bg-orange-50", icon: "🚿" },
+  { task: "พ่นสารบำรุงใบ",   date: "5 มิ.ย. 2567",  daysLeft: 14, color: "text-blue-500",   bg: "bg-blue-50",   icon: "🌱" },
+];
 
 export default function Dashboard() {
   const [, navigate] = useLocation();
@@ -33,18 +41,17 @@ export default function Dashboard() {
     { query: { queryKey: getListTransactionsQueryKey({ year: currentYear }) } }
   );
 
-  // Fertilizer calculator state
-  const [area,    setArea]    = useState("");
-  const [trees,   setTrees]   = useState("");
-  const [age,     setAge]     = useState("");
+  const [area,    setArea]    = useState("25,600");
+  const [trees,   setTrees]   = useState("320");
+  const [age,     setAge]     = useState("6");
   const [variety, setVariety] = useState(VARIETIES[0]);
   const [fertResult, setFertResult] = useState<null | {
     n15: number; urea: number; sulfur: number; total: number;
   }>(null);
 
   function calcFertilizer() {
-    const a = parseFloat(area) || 0;
-    const t = parseFloat(trees) || 0;
+    const a = parseFloat(area.replace(/,/g, "")) || 0;
+    const t = parseFloat(trees.replace(/,/g, "")) || 0;
     const ag = parseFloat(age) || 1;
     if (!a && !t) return;
     const base = a ? a * 50 : t * 6;
@@ -55,10 +62,6 @@ export default function Dashboard() {
     const total = Math.round((n15 + urea + sulfur) * (a || t * 0.02));
     setFertResult({ n15, urea, sulfur, total });
   }
-
-  const recentTxs = [...allTxs]
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 4);
 
   const chartData = trend?.map((t) => ({
     month: MONTHS_TH[t.month - 1],
@@ -71,73 +74,60 @@ export default function Dashboard() {
 
   const statCards = [
     {
-      title:  "รายได้รวม (ปีนี้)",
-      value:  summary ? `฿${(summary.totalIncome / 1000).toFixed(0)}K` : "—",
-      sub:    summary ? formatBaht(summary.totalIncome) : "",
-      color:  "bg-green-100",
-      emoji:  "💰",
-      trend:  "+18.6% จากปีก่อน",
-      trendUp: true,
+      title: "รายได้รวม (ปีนี้)",
+      value: summary ? (summary.totalIncome / 1000).toFixed(0) + "K" : "—",
+      sub: summary ? summary.totalIncome.toLocaleString("th-TH") + " บาท" : "",
+      trend: "+18.6% จากปีก่อน", trendUp: true,
+      bg: "bg-gradient-to-br from-green-400 to-green-500", icon: "💰",
     },
     {
-      title:  "รายจ่ายรวม (ปีนี้)",
-      value:  summary ? `฿${(summary.totalExpense / 1000).toFixed(0)}K` : "—",
-      sub:    summary ? formatBaht(summary.totalExpense) : "",
-      color:  "bg-pink-100",
-      emoji:  "💸",
-      trend:  "+9.2% จากปีก่อน",
-      trendUp: false,
+      title: "รายจ่ายรวม (ปีนี้)",
+      value: summary ? (summary.totalExpense / 1000).toFixed(0) + "K" : "—",
+      sub: summary ? summary.totalExpense.toLocaleString("th-TH") + " บาท" : "",
+      trend: "+9.2% จากปีก่อน", trendUp: false,
+      bg: "bg-gradient-to-br from-pink-400 to-rose-500", icon: "💳",
     },
     {
-      title:  "กำไรสุทธิ (ปีนี้)",
-      value:  summary ? `฿${(netProfit / 1000).toFixed(0)}K` : "—",
-      sub:    summary ? formatBaht(netProfit) : "",
-      color:  "bg-yellow-100",
-      emoji:  "🏆",
-      trend:  `ROI ${summary?.roi ?? 0}%`,
-      trendUp: netProfit >= 0,
+      title: "กำไรสุทธิ (ปีนี้)",
+      value: summary ? (netProfit / 1000).toFixed(0) + "K" : "—",
+      sub: summary ? netProfit.toLocaleString("th-TH") + " บาท" : "",
+      trend: "+28.4% จากปีก่อน", trendUp: true,
+      bg: "bg-gradient-to-br from-amber-400 to-yellow-500", icon: "🏆",
     },
     {
-      title:  "ต้นทุนเฉลี่ย/ไร่",
-      value:  summary ? `฿${(summary.costPerRai / 1000).toFixed(1)}K` : "—",
-      sub:    summary ? formatBaht(summary.costPerRai) : "",
-      color:  "bg-blue-100",
-      emoji:  "📊",
-      trend:  "-3.5% จากปีก่อน",
-      trendUp: true,
+      title: "ต้นทุนเฉลี่ย/ไร่",
+      value: summary ? (summary.costPerRai).toLocaleString("th-TH") : "—",
+      sub: summary ? formatBaht(summary.costPerRai) : "",
+      trend: "-3.5% จากปีก่อน", trendUp: true,
+      bg: "bg-gradient-to-br from-sky-400 to-blue-500", icon: "🧮",
     },
     {
-      title:  "พื้นที่ทั้งหมด",
-      value:  summary ? `${summary.totalPlots} แปลง` : "—",
-      sub:    summary ? `${formatNumber(summary.totalTrees)} ต้น` : "",
-      color:  "bg-purple-100",
-      emoji:  "🌳",
-      trend:  "",
-      trendUp: true,
+      title: "พื้นที่รวม",
+      value: summary ? `${summary.totalPlots} แปลง` : "—",
+      sub: summary ? `จำนวนต้น ${formatNumber(summary.totalTrees)} ต้น` : "",
+      trend: "", trendUp: true,
+      bg: "bg-gradient-to-br from-violet-400 to-purple-500", icon: "🌳",
     },
   ];
 
   const aiInsights = [
     {
-      title:  "ต้นทุนปุ๋ยสูงขึ้น",
-      detail: "เพิ่มขึ้น 37% จากเดือนก่อน แนะนำเปลี่ยนสูตรปุ๋ยเพื่อลดต้นทุน",
-      icon:   "🌿",
-      action: "ดูรายละเอียด",
-      path:   "/fertilizer",
+      title: "ต้นทุนปุ๋ยสูงขึ้น",
+      detail: "ต้นทุนปุ๋ยเพิ่มขึ้น 37% ของต้นทุนทั้งหมด แนะนำ เปลี่ยนสูตรปุ๋ยเพื่อลดต้นทุน",
+      action: "ดูรายละเอียด", path: "/fertilizer",
+      bg: "bg-green-50", iconBg: "bg-green-100", emoji: "🌿",
     },
     {
-      title:  "กำไรมีแนวโน้มเพิ่มขึ้น",
-      detail: forecast ? `คาดการณ์ +${forecast.yoyChange}% จากปีที่แล้ว รักษาคุณภาพผลผลิต` : "วิเคราะห์แนวโน้มรายปี",
-      icon:   "📈",
-      action: "ดูพยากรณ์",
-      path:   "/forecast",
+      title: "กำไรมีแนวโน้มเพิ่มขึ้น",
+      detail: forecast ? `คาดการณ์กำไรปีนี้เพิ่มขึ้น ${forecast.yoyChange}% แนะนำ: รักษาคุณภาพผลผลิตต่อเนื่อง` : "วิเคราะห์แนวโน้มรายปี",
+      action: "ดูพยากรณ์", path: "/forecast",
+      bg: "bg-blue-50", iconBg: "bg-blue-100", emoji: "📈",
     },
     {
-      title:  "ใกล้ถึงรอบพ่นยา",
+      title: "ใกล้ถึงรอบพ่นยา",
       detail: "อีก 3 วัน ถึงรอบพ่นป้องกันโรคเชื้อรา เตรียมยาตามสูตรแนะนำ",
-      icon:   "🚿",
-      action: "ดูตารางพ่น",
-      path:   "/fertilizer",
+      action: "ดูตารางพ่นยา", path: "/fertilizer",
+      bg: "bg-orange-50", iconBg: "bg-orange-100", emoji: "🚿",
     },
   ];
 
@@ -146,56 +136,37 @@ export default function Dashboard() {
   const greeting = hour < 12 ? "สวัสดีตอนเช้า" : hour < 17 ? "สวัสดีตอนบ่าย" : "สวัสดีตอนเย็น";
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-5 pb-10">
 
-      {/* ===== Farm Photo Hero Banner ===== */}
-      <div className="relative h-44 rounded-3xl overflow-hidden shadow-lg">
-        <img
-          src="/images/durian-tree-web.jpg"
-          alt="สวนทุเรียน"
-          className="w-full h-full object-cover object-center"
-          onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
-        />
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-green-900/75 via-green-800/40 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-
-        {/* Floating content */}
-        <div className="absolute inset-0 flex items-center px-8">
-          <div>
-            <p className="text-white/70 text-xs font-medium mb-1 tracking-widest uppercase">{greeting} 🌿</p>
-            <h2 className="text-2xl font-extrabold text-white drop-shadow-md">สวนทุเรียนของฉัน</h2>
-            <p className="text-white/75 text-sm mt-1">
-              {now.toLocaleDateString("th-TH", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-            </p>
-          </div>
+      {/* ===== Greeting header ===== */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+            {greeting}, เจ้าของสวน <span>🌿</span>
+          </h2>
+          <p className="text-sm text-gray-500 mt-0.5">ภาพรวมการดำเนินงานของสวนทุเรียน</p>
         </div>
-
-        {/* Right: photo strip */}
-        <div className="absolute right-5 top-1/2 -translate-y-1/2 flex gap-2 max-sm:hidden">
-          {["/images/durian-thorns-web.jpg", "/images/durian-seasons-web.jpg"].map((src, i) => (
-            <div key={i} className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-white/30 shadow-lg">
-              <img
-                src={src}
-                alt=""
-                className="w-full h-full object-cover"
-                onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
-              />
-            </div>
-          ))}
+        <div className="text-right hidden sm:block">
+          <p className="text-xs text-gray-400">{now.toLocaleDateString("th-TH", { weekday: "long" })}</p>
+          <p className="text-xs font-semibold text-gray-600">
+            {now.toLocaleDateString("th-TH", { day: "numeric", month: "long", year: "numeric" })}
+          </p>
         </div>
       </div>
 
       {/* ===== Stat Cards ===== */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {statCards.map((card) => (
-          <div key={card.title} className={`${card.color} rounded-3xl p-5 shadow-sm hover:shadow-md transition-shadow`}>
-            <div className="text-3xl mb-2">{card.emoji}</div>
-            <p className="text-xs text-gray-500 font-medium leading-tight mb-1">{card.title}</p>
-            <h3 className="text-2xl font-bold text-gray-800 mb-0.5">{sumLoading ? "—" : card.value}</h3>
-            {card.sub && <p className="text-[11px] text-gray-500 mb-1">{card.sub}</p>}
+          <div key={card.title} className={`${card.bg} rounded-2xl p-4 shadow-md text-white relative overflow-hidden`}>
+            <div className="absolute -right-2 -top-2 text-4xl opacity-20">{card.icon}</div>
+            <div className="text-2xl mb-1">{card.icon}</div>
+            <p className="text-[11px] font-medium text-white/80 leading-tight mb-0.5">{card.title}</p>
+            <h3 className="text-xl font-extrabold text-white">
+              {sumLoading ? "—" : card.value}
+            </h3>
+            {card.sub && <p className="text-[10px] text-white/70 mt-0.5 leading-tight">{card.sub}</p>}
             {card.trend && (
-              <div className={`flex items-center gap-1 text-[11px] font-semibold ${card.trendUp ? "text-green-600" : "text-pink-600"}`}>
+              <div className="flex items-center gap-0.5 mt-1.5 text-[10px] font-semibold text-white/90">
                 {card.trendUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                 {card.trend}
               </div>
@@ -204,283 +175,267 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* ===== Chart + AI Panel ===== */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      {/* ===== Main 2-column area ===== */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
 
-        {/* Monthly Chart */}
-        <div className="lg:col-span-2 bg-white rounded-3xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-5">
-            <div>
-              <h3 className="font-bold text-lg text-gray-800">สรุปรายรับ-รายจ่าย รายเดือน</h3>
-              <p className="text-xs text-gray-400 mt-0.5">ปี {currentYear}</p>
-            </div>
-            <div className="flex items-center gap-3 text-xs text-gray-500">
-              <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-green-500" />รายรับ</div>
-              <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-pink-400" />รายจ่าย</div>
-              <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-amber-400" />กำไร</div>
-            </div>
-          </div>
+        {/* LEFT COLUMN (chart + calculator) */}
+        <div className="xl:col-span-2 space-y-5">
 
-          {trendLoading ? (
-            <div className="h-60 bg-gradient-to-r from-green-50 to-pink-50 rounded-2xl animate-pulse flex items-center justify-center text-gray-400 text-sm">
-              กำลังโหลดข้อมูล...
+          {/* Monthly Chart */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🌟</span>
+                <div>
+                  <h3 className="font-bold text-sm text-gray-800">สรุปรายรับ-รายจ่าย รายเดือน (ปี {BE_YEAR})</h3>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 text-[11px] text-gray-500">
+                <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-full bg-green-400" />รายรับ</div>
+                <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-full bg-pink-400" />รายจ่าย</div>
+                <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-full bg-amber-400" />กำไร</div>
+                <select className="border border-gray-200 rounded-lg px-2 py-1 text-[11px] bg-white text-gray-600">
+                  <option>ปี {BE_YEAR}</option>
+                </select>
+              </div>
             </div>
-          ) : chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={260}>
-              <ComposedChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-                <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} axisLine={false} tickLine={false} />
-                <Tooltip
-                  formatter={(v: number) => formatBaht(v)}
-                  contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", fontSize: 12 }}
-                  cursor={{ fill: "rgba(0,0,0,0.04)" }}
-                />
-                <Bar dataKey="รายรับ"  fill="#22c55e" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="รายจ่าย" fill="#f472b6" radius={[6, 6, 0, 0]} />
-                <Line dataKey="กำไร" stroke="#f59e0b" strokeWidth={2.5} dot={{ r: 3, fill: "#f59e0b" }} type="monotone" />
-              </ComposedChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="h-60 bg-gradient-to-r from-green-50 to-pink-50 rounded-2xl flex items-center justify-center">
-              <div className="text-center">
-                <p className="text-gray-400 text-sm mb-3">ยังไม่มีข้อมูลรายเดือน</p>
-                <button
-                  onClick={() => navigate("/accounting")}
-                  className="bg-green-500 text-white text-xs px-4 py-2 rounded-xl font-medium hover:bg-green-600 transition-colors"
-                >
+
+            {trendLoading ? (
+              <div className="h-52 bg-green-50 rounded-xl animate-pulse flex items-center justify-center text-gray-400 text-sm">
+                กำลังโหลด...
+              </div>
+            ) : chartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={220}>
+                <ComposedChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                  <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: "#9ca3af" }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} axisLine={false} tickLine={false} />
+                  <Tooltip
+                    formatter={(v: number) => v.toLocaleString("th-TH") + " บาท"}
+                    contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.1)", fontSize: 12 }}
+                    cursor={{ fill: "rgba(0,0,0,0.03)" }}
+                  />
+                  <Bar dataKey="รายรับ"  fill="#4ade80" radius={[4, 4, 0, 0]} maxBarSize={18} />
+                  <Bar dataKey="รายจ่าย" fill="#f472b6" radius={[4, 4, 0, 0]} maxBarSize={18} />
+                  <Line dataKey="กำไร" stroke="#f59e0b" strokeWidth={2.5} dot={{ r: 3, fill: "#f59e0b" }} type="monotone" />
+                </ComposedChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-52 bg-green-50 rounded-xl flex flex-col items-center justify-center gap-3">
+                <p className="text-gray-400 text-sm">ยังไม่มีข้อมูลรายเดือน</p>
+                <button onClick={() => navigate("/accounting")} className="bg-green-500 text-white text-xs px-4 py-2 rounded-xl font-medium hover:bg-green-600">
                   + เริ่มบันทึกรายการ
                 </button>
               </div>
-            </div>
-          )}
-        </div>
-
-        {/* AI Analysis */}
-        <div className="bg-white rounded-3xl p-6 shadow-sm">
-          <div className="flex items-center gap-2 mb-5">
-            <div className="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center">
-              <Bot className="w-4 h-4 text-purple-600" />
-            </div>
-            <h3 className="font-bold text-base text-purple-700">AI วิเคราะห์สวน</h3>
+            )}
           </div>
 
-          <div className="space-y-3">
-            {aiInsights.map((insight) => (
-              <div key={insight.title} className="bg-purple-50 rounded-2xl p-4 hover:bg-purple-100 transition-colors cursor-pointer" onClick={() => navigate(insight.path)}>
-                <div className="flex items-start gap-3">
-                  <span className="text-xl shrink-0">{insight.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-sm text-gray-800">{insight.title}</h4>
-                    <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{insight.detail}</p>
-                    <span className="inline-block mt-2 text-xs font-medium text-purple-600 hover:underline">{insight.action} →</span>
+          {/* Fertilizer Calculator */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-lg">🌱</span>
+              <h3 className="font-bold text-sm text-gray-800">คำนวณปุ๋ยและยาพ่น</h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Input table */}
+              <div className="md:col-span-1 bg-gray-50 rounded-xl p-4">
+                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-3">ข้อมูลสวน</p>
+                <div className="space-y-2.5">
+                  {[
+                    { label: "พื้นที่ (ตร.ม.)", val: area, set: setArea, placeholder: "25600" },
+                    { label: "จำนวนต้น",       val: trees, set: setTrees, placeholder: "320" },
+                    { label: "อายุต้น (ปี)",    val: age,   set: setAge,   placeholder: "6" },
+                  ].map(f => (
+                    <div key={f.label}>
+                      <label className="text-[11px] text-gray-400 font-medium">{f.label}</label>
+                      <input
+                        value={f.val}
+                        onChange={e => f.set(e.target.value)}
+                        placeholder={f.placeholder}
+                        className="w-full mt-0.5 border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-300"
+                      />
+                    </div>
+                  ))}
+                  <div>
+                    <label className="text-[11px] text-gray-400 font-medium">พันธุ์ทุเรียน</label>
+                    <select
+                      value={variety}
+                      onChange={e => setVariety(e.target.value)}
+                      className="w-full mt-0.5 border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-300"
+                    >
+                      {VARIETIES.map(v => <option key={v}>{v}</option>)}
+                    </select>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
 
-          <button
-            onClick={() => navigate("/forecast")}
-            className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-semibold py-3 rounded-2xl hover:opacity-90 transition-opacity shadow-sm"
-          >
-            ดูคำแนะนำทั้งหมดจาก AI →
-          </button>
-        </div>
-      </div>
-
-      {/* ===== Fertilizer Calculator ===== */}
-      <div className="bg-white rounded-3xl p-6 shadow-sm">
-        <div className="flex items-center gap-3 mb-5">
-          <div className="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center">
-            <Sprout className="w-5 h-5 text-green-600" />
-          </div>
-          <h3 className="font-bold text-xl text-green-700">คำนวณปุ๋ยและยาพ่น</h3>
-        </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1.5">พื้นที่ (ตร.ม.)</label>
-            <input
-              type="number"
-              placeholder="เช่น 25600"
-              value={area}
-              onChange={e => setArea(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl p-3 text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-300 transition-all"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1.5">จำนวนต้น</label>
-            <input
-              type="number"
-              placeholder="เช่น 320"
-              value={trees}
-              onChange={e => setTrees(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl p-3 text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-300 transition-all"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1.5">อายุต้น (ปี)</label>
-            <input
-              type="number"
-              placeholder="เช่น 6"
-              value={age}
-              onChange={e => setAge(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl p-3 text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-300 transition-all"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1.5">พันธุ์ทุเรียน</label>
-            <select
-              value={variety}
-              onChange={e => setVariety(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl p-3 text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-300 transition-all"
-            >
-              {VARIETIES.map(v => <option key={v}>{v}</option>)}
-            </select>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4 flex-wrap">
-          <button
-            onClick={calcFertilizer}
-            className="bg-gradient-to-r from-pink-400 to-purple-500 hover:from-pink-500 hover:to-purple-600 text-white px-8 py-3 rounded-2xl font-semibold text-sm shadow-md shadow-pink-200 hover:shadow-lg transition-all flex items-center gap-2"
-          >
-            <Calculator className="w-4 h-4" />
-            คำนวณด้วย AI
-          </button>
-          {fertResult && (
-            <button
-              onClick={() => { setFertResult(null); setArea(""); setTrees(""); setAge(""); }}
-              className="text-sm text-gray-400 hover:text-gray-600 flex items-center gap-1"
-            >
-              <RefreshCw className="w-3.5 h-3.5" /> คำนวณใหม่
-            </button>
-          )}
-        </div>
-
-        {fertResult && (
-          <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {[
-              { label: "ปุ๋ยเคมี (15-15-15)", value: `${fertResult.n15.toLocaleString()} กก./ไร่`, color: "bg-green-50 border-green-200" },
-              { label: "ปุ๋ยยูเรีย",          value: `${fertResult.urea.toLocaleString()} กก./ไร่`, color: "bg-blue-50 border-blue-200" },
-              { label: "ปุ๋ยกำมะถัน",        value: `${fertResult.sulfur.toLocaleString()} กก./ไร่`, color: "bg-yellow-50 border-yellow-200" },
-              { label: "ต้นทุนรวม (ประมาณ)", value: `฿${fertResult.total.toLocaleString()}`,         color: "bg-pink-50 border-pink-200" },
-            ].map(r => (
-              <div key={r.label} className={`${r.color} border rounded-2xl p-4`}>
-                <p className="text-xs text-gray-500 font-medium mb-1">{r.label}</p>
-                <p className="text-lg font-bold text-gray-800">{r.value}</p>
+              {/* Results */}
+              <div className="md:col-span-1 space-y-2">
+                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">ผลการคำนวณปุ๋ย</p>
+                {[
+                  { label: "ปุ๋ยเคมี (สูตร 15-15-15)", value: fertResult ? `${fertResult.n15.toLocaleString()} กก./ไร่` : "—", color: "text-green-700", bg: "bg-green-50" },
+                  { label: "ปุ๋ยยูเรีย",              value: fertResult ? `${fertResult.urea.toLocaleString()} กก./ไร่` : "—",  color: "text-blue-700",  bg: "bg-blue-50"  },
+                  { label: "ปุ๋ยกำมะถัน",            value: fertResult ? `${fertResult.sulfur.toLocaleString()} กก./ไร่` : "—", color: "text-amber-700", bg: "bg-amber-50" },
+                  { label: "ต้นทุนรวม (ประมาณ)",    value: fertResult ? `฿${fertResult.total.toLocaleString()}` : "—",           color: "text-pink-700",  bg: "bg-pink-50"  },
+                ].map(r => (
+                  <div key={r.label} className={`${r.bg} rounded-xl px-3 py-2 flex items-center justify-between`}>
+                    <span className="text-xs text-gray-500">{r.label}</span>
+                    <span className={`text-sm font-bold ${r.color}`}>{r.value}</span>
+                  </div>
+                ))}
               </div>
-            ))}
+
+              {/* Example + Button */}
+              <div className="md:col-span-1">
+                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">ตัวอย่างการคำนวณ</p>
+                <div className="bg-gray-50 rounded-xl p-3 text-xs text-gray-600 leading-relaxed mb-3">
+                  <p>อัตราการใช้ปุ๋ย 50 กรัม/ตร.ม.</p>
+                  <p>พื้นที่ 25,600 ตร.ม.</p>
+                  <p className="mt-1 font-medium text-green-700">25,600 × 50 กรัม<br />= 1,280,000 กรัม<br />= <strong>1,280 กิโลกรัม</strong></p>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={calcFertilizer}
+                    className="w-full bg-gradient-to-r from-pink-400 to-purple-500 hover:opacity-90 text-white py-2.5 rounded-xl font-semibold text-sm shadow-md shadow-pink-100 flex items-center justify-center gap-2 transition-all"
+                  >
+                    <RefreshCw className="w-4 h-4" /> คำนวณใหม่
+                  </button>
+                  <button
+                    onClick={() => navigate("/fertilizer")}
+                    className="w-full border border-green-300 text-green-700 py-2 rounded-xl text-sm font-medium hover:bg-green-50 transition-colors"
+                  >
+                    ไปหน้าคำนวณเต็ม →
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* ===== Recent Transactions + Farm Stats ===== */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* RIGHT COLUMN */}
+        <div className="space-y-4">
 
-        {/* Recent Transactions */}
-        <div className="bg-white rounded-3xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-base text-gray-800">รายการล่าสุด</h3>
-            <button onClick={() => navigate("/accounting")} className="text-xs text-green-600 font-semibold hover:underline">
-              ดูทั้งหมด →
+          {/* AI Analysis Panel */}
+          <div className="bg-white rounded-2xl p-4 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-7 h-7 rounded-lg bg-purple-100 flex items-center justify-center">
+                <Bot className="w-4 h-4 text-purple-600" />
+              </div>
+              <h3 className="font-bold text-sm text-purple-700">AI วิเคราะห์สวนของคุณ</h3>
+            </div>
+
+            <div className="space-y-2.5">
+              {aiInsights.map((ins) => (
+                <div
+                  key={ins.title}
+                  className={`${ins.bg} rounded-xl p-3 cursor-pointer hover:opacity-80 transition-opacity`}
+                  onClick={() => navigate(ins.path)}
+                >
+                  <div className="flex items-start gap-2.5">
+                    <div className={`${ins.iconBg} w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-base`}>
+                      {ins.emoji}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] font-bold text-gray-800">{ins.title}</p>
+                      <p className="text-[11px] text-gray-500 mt-0.5 leading-relaxed">{ins.detail}</p>
+                      <span className="text-[11px] font-semibold text-purple-600 mt-1 inline-block">{ins.action} →</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => navigate("/forecast")}
+              className="mt-3 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-semibold py-2.5 rounded-xl hover:opacity-90 transition-opacity shadow-sm flex items-center justify-center gap-1.5"
+            >
+              ดูคำแนะนำทั้งหมดจาก AI <ChevronRight className="w-4 h-4" />
             </button>
           </div>
 
-          {recentTxs.length > 0 ? (
+          {/* Spray / Fertilizer Schedule */}
+          <div className="bg-white rounded-2xl p-4 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <CalendarCheck className="w-4 h-4 text-green-600" />
+                <h3 className="font-bold text-sm text-gray-800">ตารางพ่นยา/ใส่ปุ๋ย (ถัดไป)</h3>
+              </div>
+              <button onClick={() => navigate("/fertilizer")} className="text-[11px] text-green-600 font-semibold hover:underline">
+                ดูทั้งหมด →
+              </button>
+            </div>
+
             <div className="space-y-2">
-              {recentTxs.map((tx) => (
-                <div
-                  key={tx.id}
-                  className="flex items-center gap-3 p-3 rounded-2xl hover:bg-gray-50 cursor-pointer transition-colors"
-                  onClick={() => navigate("/accounting")}
-                >
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${tx.type === "income" ? "bg-green-100" : "bg-pink-100"}`}>
-                    {tx.type === "income" ? <Plus className="w-4 h-4 text-green-600" /> : <MinusCircle className="w-4 h-4 text-pink-600" />}
-                  </div>
+              {spraySchedule.map((item) => (
+                <div key={item.task} className={`${item.bg} rounded-xl p-3 flex items-center gap-3`}>
+                  <span className="text-lg shrink-0">{item.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-800 truncate">{tx.notes || tx.category}</p>
-                    <p className="text-xs text-gray-400">
-                      {new Date(tx.date).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" })}
-                    </p>
+                    <p className="text-[12px] font-semibold text-gray-800">{item.task}</p>
+                    <p className="text-[11px] text-gray-500">{item.date}</p>
                   </div>
-                  <span className={`text-sm font-bold shrink-0 ${tx.type === "income" ? "text-green-600" : "text-pink-600"}`}>
-                    {tx.type === "income" ? "+" : "−"}{formatBaht(tx.amount)}
+                  <span className={`text-[11px] font-bold ${item.color} shrink-0`}>
+                    อีก {item.daysLeft} วัน
                   </span>
                 </div>
               ))}
             </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-400 text-sm mb-3">ยังไม่มีรายการ</p>
-              <button
-                onClick={() => navigate("/accounting")}
-                className="bg-green-500 text-white text-xs px-4 py-2 rounded-xl font-medium hover:bg-green-600 transition-colors"
-              >
-                + บันทึกรายการแรก
-              </button>
-            </div>
-          )}
-        </div>
+          </div>
 
-        {/* Farm Overview */}
-        <div className="bg-white rounded-3xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-base text-gray-800">ข้อมูลสวนโดยรวม</h3>
-            <button onClick={() => navigate("/plots")} className="text-xs text-green-600 font-semibold hover:underline">
-              จัดการแปลง →
+          {/* AI Chat Prompt */}
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 rounded-2xl p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shrink-0 shadow-md">
+                <MessageSquare className="w-4 h-4 text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-bold text-gray-700">มีคำถามเกี่ยวกับทุเรียน?</p>
+                <p className="text-[11px] text-gray-500 mt-0.5">AI ผู้ช่วยพร้อมให้คำแนะนำ</p>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate("/forecast")}
+              className="mt-3 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-semibold py-2.5 rounded-xl hover:opacity-90 shadow-sm flex items-center justify-center gap-1.5 transition-all"
+            >
+              <Bot className="w-3.5 h-3.5" /> ถาม AI 💬
             </button>
           </div>
 
-          {sumLoading ? (
-            <div className="space-y-3">{[...Array(4)].map((_, i) => <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse" />)}</div>
-          ) : summary ? (
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { icon: <Map className="w-5 h-5 text-blue-500" />,   label: "จำนวนแปลง",    value: `${summary.totalPlots} แปลง`,              bg: "bg-blue-50"   },
-                { icon: <TreePine className="w-5 h-5 text-green-500" />, label: "จำนวนต้น", value: `${formatNumber(summary.totalTrees)} ต้น`,  bg: "bg-green-50"  },
-                { icon: <BarChart3 className="w-5 h-5 text-pink-500" />, label: "ต้นทุน/ไร่", value: formatBaht(summary.costPerRai),            bg: "bg-pink-50"   },
-                { icon: <TrendingUp className="w-5 h-5 text-amber-500" />, label: "รายรับ/ต้น", value: formatBaht(summary.revenuePerTree),     bg: "bg-amber-50"  },
-              ].map(item => (
-                <div key={item.label} className={`${item.bg} rounded-2xl p-4 flex items-center gap-3`}>
-                  <div className="shrink-0">{item.icon}</div>
-                  <div>
-                    <p className="text-xs text-gray-500 font-medium">{item.label}</p>
-                    <p className="text-sm font-bold text-gray-800 mt-0.5">{item.value}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-400 text-sm mb-3">ยังไม่มีข้อมูลแปลง</p>
-              <button
-                onClick={() => navigate("/plots")}
-                className="bg-blue-500 text-white text-xs px-4 py-2 rounded-xl font-medium hover:bg-blue-600 transition-colors"
-              >
-                + เพิ่มแปลงแรก
-              </button>
-            </div>
-          )}
-
-          {forecast && (
-            <div
-              className="mt-4 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-2xl p-4 cursor-pointer hover:shadow-sm transition-shadow"
-              onClick={() => navigate("/forecast")}
-            >
-              <p className="text-xs font-semibold text-amber-700 mb-1">🔮 ประมาณการปีหน้า</p>
-              <div className="flex items-baseline gap-3 flex-wrap">
-                <span className="text-base font-bold text-gray-800">รายรับ {formatBaht(forecast.forecastedIncome)}</span>
-                <span className={`text-sm font-bold ${forecast.yoyChange >= 0 ? "text-green-600" : "text-red-500"}`}>
-                  {forecast.yoyChange >= 0 ? "+" : ""}{forecast.yoyChange}% YoY
-                </span>
+          {/* Quick Recent Transactions */}
+          {allTxs.length > 0 && (
+            <div className="bg-white rounded-2xl p-4 shadow-sm">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-bold text-sm text-gray-800">รายการล่าสุด</h3>
+                <button onClick={() => navigate("/accounting")} className="text-[11px] text-green-600 font-semibold hover:underline">
+                  ดูทั้งหมด →
+                </button>
+              </div>
+              <div className="space-y-1.5">
+                {[...allTxs]
+                  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                  .slice(0, 3)
+                  .map(tx => (
+                    <div key={tx.id} className="flex items-center gap-2.5 py-1.5">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${tx.type === "income" ? "bg-green-100" : "bg-pink-100"}`}>
+                        <span className="text-sm">{tx.type === "income" ? "💰" : "💸"}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-gray-700 truncate">{tx.notes || tx.category}</p>
+                        <p className="text-[10px] text-gray-400">
+                          {new Date(tx.date).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}
+                        </p>
+                      </div>
+                      <span className={`text-xs font-bold shrink-0 ${tx.type === "income" ? "text-green-600" : "text-pink-600"}`}>
+                        {tx.type === "income" ? "+" : "−"}{tx.amount.toLocaleString("th-TH")}
+                      </span>
+                    </div>
+                  ))}
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Floating action button */}
+      {/* Floating Add button */}
       <button
         onClick={() => navigate("/accounting")}
         className="fixed bottom-8 right-8 w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-full shadow-xl shadow-green-200 hover:shadow-2xl flex items-center justify-center transition-all hover:scale-105 z-40 group"
