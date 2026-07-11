@@ -1,3 +1,2 @@
-- [DurianFarm Auth Pattern](auth-pattern.md) — auto-login on 401 with farmowner/durian2024 credentials; no login page
-- [DurianFarm Dark Mode](dark-mode.md) — CSS class-based dark mode via ThemeContext; .dark on <html>
-- [DurianFarm API Race](api-race.md) — dashboard queries gated with enabled: !!user?.id to avoid 401 before auth
+- [DurianFarm Dark Mode](dark-mode.md) — class-based dark mode via ThemeContext; toggle adds .dark to html element
+- [DurianFarm Auth Guard Pattern](auth-guard.md) — dashboard queries gated with enabled flag to avoid 401 before session established
