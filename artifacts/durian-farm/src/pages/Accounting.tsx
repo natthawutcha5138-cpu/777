@@ -3,12 +3,11 @@ import { useListTransactions, useCreateTransaction, useDeleteTransaction, useLis
 import { getListTransactionsQueryKey, getListPlotsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatBaht, EXPENSE_CATEGORIES, INCOME_CATEGORIES, MONTHS_TH } from "@/lib/utils";
-import { TrendingUp, TrendingDown, Wallet, Plus, Trash2, ChevronDown } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet, Plus, Trash2, ChevronDown, X, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const currentYear = new Date().getFullYear();
 type TxType = "income" | "expense" | undefined;
-
-const inputCls = "border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-300 focus:bg-white transition-all w-full";
 
 export default function Accounting() {
   const qc = useQueryClient();
@@ -19,7 +18,7 @@ export default function Accounting() {
   const [form, setForm] = useState({
     date: new Date().toISOString().split("T")[0],
     type: "expense" as "income" | "expense",
-    category: EXPENSE_CATEGORIES[0],
+    category: EXPENSE_CATEGORIES[0]!,
     amount: "", notes: "", plotId: "",
   });
 
@@ -32,7 +31,7 @@ export default function Accounting() {
       onSuccess: () => {
         qc.invalidateQueries({ queryKey: getListTransactionsQueryKey() });
         setShowForm(false);
-        setForm({ date: new Date().toISOString().split("T")[0], type: "expense", category: EXPENSE_CATEGORIES[0], amount: "", notes: "", plotId: "" });
+        setForm({ date: new Date().toISOString().split("T")[0], type: "expense", category: EXPENSE_CATEGORIES[0]!, amount: "", notes: "", plotId: "" });
       },
     },
   });
@@ -53,128 +52,159 @@ export default function Accounting() {
   }
 
   return (
-    <div className="space-y-5 pb-10">
+    <div className="max-w-6xl mx-auto space-y-5 pb-10">
 
-      {/* Photo Banner Header */}
-      <div className="relative h-32 rounded-3xl overflow-hidden shadow-lg">
-        <img src="/images/durian-thorns-web.jpg" alt="ทุเรียน" className="w-full h-full object-cover object-center" />
-        <div className="absolute inset-0 bg-gradient-to-r from-green-900/80 via-green-800/60 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+      {/* ── Page Header ── */}
+      <div className="relative h-28 rounded-2xl overflow-hidden" style={{ boxShadow: "var(--shadow-sm)" }}>
+        <img src="/images/durian-thorns-web.jpg" alt="ทุเรียน" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-900/75 via-gray-900/50 to-transparent" />
         <div className="absolute inset-0 flex items-center justify-between px-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
-              <Wallet className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20 shrink-0">
+              <Wallet className="w-4.5 h-4.5 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white drop-shadow">บัญชีรายรับ-รายจ่าย</h1>
-              <p className="text-xs text-white/70 mt-0.5">บันทึกและติดตามรายการทางการเงิน</p>
+              <h1 className="text-[18px] font-bold text-white tracking-tight">บัญชีรายรับ-รายจ่าย</h1>
+              <p className="text-[11px] text-white/60 mt-0.5">บันทึกและติดตามรายการทางการเงิน</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex gap-2 max-sm:hidden">
-              {["/images/durian-seasons-web.jpg", "/images/durian-flower.jpg"].map((src, i) => (
-                <div key={i} className="w-14 h-14 rounded-xl overflow-hidden border-2 border-white/30 shadow">
-                  <img src={src} alt="" className="w-full h-full object-cover" />
-                </div>
-              ))}
-            </div>
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white text-sm font-semibold rounded-2xl border border-white/30 transition-all"
-            >
-              <Plus className="w-4 h-4" />
-              {showForm ? "ยกเลิก" : "บันทึกรายการ"}
-            </button>
-          </div>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="flex items-center gap-2 px-4 py-2 bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white text-[13px] font-semibold rounded-xl border border-white/20 transition-all"
+          >
+            {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+            {showForm ? "ยกเลิก" : "บันทึกรายการ"}
+          </button>
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-3">
+      {/* ── Summary Cards ── */}
+      <div className="grid grid-cols-3 gap-4">
         {[
-          { label: "รายรับรวม",  val: income,  bg: "from-emerald-50 to-green-100",  icon: "💰", textCls: "text-green-700",   iconBg: "bg-green-200"  },
-          { label: "รายจ่ายรวม", val: expense, bg: "from-rose-50 to-pink-100",       icon: "💸", textCls: "text-rose-600",    iconBg: "bg-pink-200"   },
-          { label: "กำไรสุทธิ",  val: net,     bg: net >= 0 ? "from-amber-50 to-yellow-100" : "from-rose-50 to-pink-100",
-            icon: net >= 0 ? "🏆" : "📉", textCls: net >= 0 ? "text-amber-700" : "text-rose-600", iconBg: net >= 0 ? "bg-amber-200" : "bg-pink-200" },
+          {
+            label: "รายรับรวม", val: income, icon: ArrowUpRight,
+            iconBg: "bg-green-100 dark:bg-green-950/40 text-green-600 dark:text-green-400",
+            valCls: "text-green-700 dark:text-green-400", accentClass: "green",
+          },
+          {
+            label: "รายจ่ายรวม", val: expense, icon: ArrowDownRight,
+            iconBg: "bg-red-100 dark:bg-red-950/40 text-red-500 dark:text-red-400",
+            valCls: "text-red-600 dark:text-red-400", accentClass: "red",
+          },
+          {
+            label: "กำไรสุทธิ", val: net,
+            icon: net >= 0 ? TrendingUp : TrendingDown,
+            iconBg: net >= 0 ? "bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400" : "bg-red-100 dark:bg-red-950/40 text-red-500 dark:text-red-400",
+            valCls: net >= 0 ? "text-amber-700 dark:text-amber-400" : "text-red-600 dark:text-red-400",
+            accentClass: net >= 0 ? "amber" : "red",
+          },
         ].map(s => (
-          <div key={s.label} className={`bg-gradient-to-br ${s.bg} rounded-3xl p-5 shadow-sm`}>
-            <div className={`w-9 h-9 ${s.iconBg} rounded-xl flex items-center justify-center text-lg mb-3`}>{s.icon}</div>
-            <p className="text-xs text-gray-500 font-medium mb-1">{s.label}</p>
-            <p className={`text-xl font-bold tabular-nums ${s.textCls}`}>{formatBaht(s.val)}</p>
+          <div key={s.label} className={cn("stat-card", s.accentClass)}>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[11px] font-medium text-gray-400">{s.label}</p>
+              <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center", s.iconBg)}>
+                <s.icon className="w-3.5 h-3.5" />
+              </div>
+            </div>
+            <p className={cn("text-[20px] font-extrabold num tabular-nums leading-none", s.valCls)}>{formatBaht(s.val)}</p>
           </div>
         ))}
       </div>
 
-      {/* Add Form */}
+      {/* ── Add Form ── */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white rounded-3xl p-6 shadow-md border border-gray-100">
-          <h2 className="text-base font-bold text-gray-800 mb-5">บันทึกรายการใหม่</h2>
+        <form onSubmit={handleSubmit} className="card-premium p-6">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="w-7 h-7 rounded-lg bg-green-50 dark:bg-green-950/40 flex items-center justify-center">
+              <Plus className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+            </div>
+            <h2 className="text-[14px] font-semibold text-gray-900 dark:text-white">บันทึกรายการใหม่</h2>
+          </div>
+
+          {/* Type tabs */}
+          <div className="flex gap-2 mb-5 p-1 bg-gray-100 dark:bg-gray-800/60 rounded-xl w-fit">
+            {[{ val: "expense", label: "💸 รายจ่าย" }, { val: "income", label: "💰 รายรับ" }].map(opt => (
+              <button
+                key={opt.val}
+                type="button"
+                onClick={() => { const t = opt.val as "income"|"expense"; setForm({ ...form, type: t, category: (t === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES)[0]! }); }}
+                className={cn(
+                  "px-4 py-1.5 rounded-lg text-[12px] font-semibold transition-all duration-150",
+                  form.type === opt.val
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700"
+                )}
+              >{opt.label}</button>
+            ))}
+          </div>
+
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {[
+              { label: "วันที่", key: "date", type: "date" },
+            ].map(f => (
+              <div key={f.key} className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{f.label}</label>
+                <input type={f.type} value={(form as any)[f.key]} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
+                  className="input-base" required />
+              </div>
+            ))}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-gray-500">วันที่</label>
-              <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className={inputCls} required />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-gray-500">ประเภท</label>
-              <select value={form.type} onChange={(e) => { const t = e.target.value as "income"|"expense"; setForm({ ...form, type: t, category: (t === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES)[0] }); }} className={inputCls}>
-                <option value="expense">รายจ่าย</option>
-                <option value="income">รายรับ</option>
-              </select>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-gray-500">หมวดหมู่</label>
-              <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className={inputCls}>
+              <label className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">หมวดหมู่</label>
+              <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="input-base">
                 {cats.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-gray-500">จำนวนเงิน (บาท)</label>
-              <input type="number" min="0" step="0.01" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} className={inputCls} placeholder="0.00" required />
+              <label className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">จำนวนเงิน (บาท)</label>
+              <input type="number" min="0" step="0.01" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                className="input-base" placeholder="0.00" required />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-gray-500">แปลง</label>
-              <select value={form.plotId} onChange={(e) => setForm({ ...form, plotId: e.target.value })} className={inputCls}>
+              <label className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">แปลง</label>
+              <select value={form.plotId} onChange={(e) => setForm({ ...form, plotId: e.target.value })} className="input-base">
                 <option value="">ไม่ระบุ</option>
                 {plots.map(p => <option key={p.id} value={String(p.id)}>{p.name}</option>)}
               </select>
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-gray-500">หมายเหตุ</label>
-              <input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className={inputCls} placeholder="ไม่บังคับ" />
+              <label className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">หมายเหตุ</label>
+              <input type="text" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                className="input-base" placeholder="ไม่บังคับ" />
             </div>
           </div>
-          <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-gray-100">
-            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2.5 text-sm border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition-colors">ยกเลิก</button>
-            <button type="submit" disabled={createTx.isPending} className="px-6 py-2.5 text-sm bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-semibold hover:from-green-600 hover:to-green-700 transition-all disabled:opacity-60 shadow-md shadow-green-200">
+
+          <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-gray-100 dark:border-gray-800">
+            <button type="button" onClick={() => setShowForm(false)} className="btn-secondary text-[13px]">ยกเลิก</button>
+            <button type="submit" disabled={createTx.isPending} className="btn-primary text-[13px] disabled:opacity-50">
               {createTx.isPending ? "กำลังบันทึก..." : "บันทึก"}
             </button>
           </div>
         </form>
       )}
 
-      {/* Transaction List */}
-      <div className="bg-white rounded-3xl shadow-sm overflow-hidden border border-gray-100">
-        <div className="px-5 py-4 border-b border-gray-100 flex flex-wrap items-center gap-3">
-          <span className="text-sm font-bold text-gray-800">รายการทั้งหมด</span>
+      {/* ── Transaction Table ── */}
+      <div className="card-premium overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800/60 flex flex-wrap items-center gap-3">
+          <span className="text-[13px] font-semibold text-gray-800 dark:text-gray-200">รายการทั้งหมด</span>
+          <span className="badge badge-gray">{txs.length} รายการ</span>
 
-          {/* Type filter tabs */}
-          <div className="flex gap-1.5 bg-gray-100 rounded-xl p-1">
+          {/* Type filter */}
+          <div className="flex gap-1 bg-gray-100 dark:bg-gray-800/60 rounded-xl p-1">
             {[
               { val: undefined, label: "ทั้งหมด" },
-              { val: "income" as TxType, label: "รายรับ" },
+              { val: "income"  as TxType, label: "รายรับ" },
               { val: "expense" as TxType, label: "รายจ่าย" },
             ].map(opt => (
               <button
                 key={opt.label}
                 onClick={() => setFilterType(opt.val)}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                className={cn(
+                  "px-3 py-1 rounded-lg text-[11px] font-semibold transition-all duration-150",
                   filterType === opt.val
-                    ? "bg-white text-gray-800 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                {opt.label}
-              </button>
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
+                    : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                )}
+              >{opt.label}</button>
             ))}
           </div>
 
@@ -183,7 +213,7 @@ export default function Accounting() {
               <select
                 value={filterMonth ?? ""}
                 onChange={(e) => setFilterMonth(e.target.value ? parseInt(e.target.value) : undefined)}
-                className="appearance-none border border-gray-200 rounded-xl pl-3 pr-7 py-1.5 text-xs bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-200 cursor-pointer"
+                className="appearance-none bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg pl-3 pr-7 py-1.5 text-[12px] text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-green-300/40 cursor-pointer"
               >
                 <option value="">ทุกเดือน</option>
                 {MONTHS_TH.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
@@ -194,7 +224,7 @@ export default function Accounting() {
               <select
                 value={filterYear}
                 onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                className="appearance-none border border-gray-200 rounded-xl pl-3 pr-7 py-1.5 text-xs bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-200 cursor-pointer"
+                className="appearance-none bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg pl-3 pr-7 py-1.5 text-[12px] text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-green-300/40 cursor-pointer"
               >
                 {[currentYear, currentYear - 1, currentYear - 2].map(y => <option key={y} value={y}>{y}</option>)}
               </select>
@@ -204,56 +234,61 @@ export default function Accounting() {
         </div>
 
         {isLoading ? (
-          <div className="p-8 text-center text-sm text-gray-400">กำลังโหลด...</div>
+          <div className="p-8 space-y-3">
+            {[...Array(4)].map((_, i) => <div key={i} className="skeleton h-10 w-full" />)}
+          </div>
         ) : txs.length === 0 ? (
-          <div className="p-12 text-center">
+          <div className="py-16 text-center">
             <div className="text-4xl mb-3">📋</div>
-            <p className="text-sm text-gray-400">ไม่มีรายการในช่วงที่เลือก</p>
+            <p className="text-[13px] font-medium text-gray-400">ไม่มีรายการในช่วงที่เลือก</p>
+            <button onClick={() => setShowForm(true)} className="mt-3 btn-primary text-[12px] py-1.5 mx-auto">
+              <Plus className="w-3.5 h-3.5" /> เพิ่มรายการ
+            </button>
           </div>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/60">
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">วันที่</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">ประเภท</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">หมวดหมู่</th>
-                <th className="px-5 py-3 text-right text-xs font-semibold text-gray-400 uppercase tracking-wide">จำนวนเงิน</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">หมายเหตุ</th>
-                <th className="px-2 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {txs.map(tx => (
-                <tr key={tx.id} className="hover:bg-gray-50/60 transition-colors">
-                  <td className="px-5 py-3.5 text-gray-500 tabular-nums text-xs">
-                    {new Date(tx.date).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" })}
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-semibold ${
-                      tx.type === "income"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-pink-100 text-pink-700"
-                    }`}>
-                      {tx.type === "income" ? "💰 รายรับ" : "💸 รายจ่าย"}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3.5 text-gray-700 font-medium">{tx.category}</td>
-                  <td className={`px-5 py-3.5 text-right font-bold tabular-nums ${tx.type === "income" ? "text-green-600" : "text-rose-500"}`}>
-                    {tx.type === "income" ? "+" : "−"}{formatBaht(tx.amount)}
-                  </td>
-                  <td className="px-5 py-3.5 text-gray-400 max-w-[180px] truncate text-xs">{tx.notes ?? "—"}</td>
-                  <td className="px-3 py-3.5 text-right">
-                    <button
-                      onClick={() => deleteTx.mutate({ id: tx.id })}
-                      className="p-1.5 rounded-xl text-gray-300 hover:text-rose-500 hover:bg-rose-50 transition-colors"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="table-base">
+              <thead>
+                <tr>
+                  <th className="w-28">วันที่</th>
+                  <th>ประเภท</th>
+                  <th>หมวดหมู่</th>
+                  <th className="text-right">จำนวนเงิน</th>
+                  <th>หมายเหตุ</th>
+                  <th className="w-10" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {txs.map(tx => (
+                  <tr key={tx.id}>
+                    <td className="text-gray-400 text-[11px] num tabular-nums">
+                      {new Date(tx.date).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" })}
+                    </td>
+                    <td>
+                      <span className={cn("badge",
+                        tx.type === "income" ? "badge-green" : "badge-red"
+                      )}>
+                        {tx.type === "income" ? "รายรับ" : "รายจ่าย"}
+                      </span>
+                    </td>
+                    <td className="font-medium text-gray-700 dark:text-gray-300 text-[13px]">{tx.category}</td>
+                    <td className={cn("text-right font-semibold num tabular-nums text-[13px]", tx.type === "income" ? "text-green-600 dark:text-green-400" : "text-red-500 dark:text-red-400")}>
+                      {tx.type === "income" ? "+" : "−"}{formatBaht(tx.amount)}
+                    </td>
+                    <td className="text-gray-400 max-w-[160px] truncate text-[12px]">{tx.notes ?? "—"}</td>
+                    <td className="text-right pr-4">
+                      <button
+                        onClick={() => deleteTx.mutate({ id: tx.id })}
+                        className="p-1.5 rounded-lg text-gray-300 dark:text-gray-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>
