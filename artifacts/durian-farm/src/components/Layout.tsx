@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import type { AuthUser } from "@/hooks/useAuth";
 import {
-  Home, Wallet, Calculator, Sprout, BarChart3,
+  Home, Wallet, Calculator, Sprout, BarChart3, Brain,
   Bell, Search, ChevronDown, LogOut, Menu, X,
   Sun, Moon, Settings, User, ChevronLeft, ChevronRight,
   Zap, TrendingUp,
@@ -12,11 +12,12 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useState, useRef, useEffect } from "react";
 
 const navItems = [
-  { path: "/",            label: "หน้าหลัก",              icon: Home,       badge: null  },
-  { path: "/accounting",  label: "บัญชีรายรับ-รายจ่าย", icon: Wallet,     badge: null  },
-  { path: "/fertilizer",  label: "คำนวณปุ๋ยและยา",       icon: Calculator, badge: "ใหม่" },
-  { path: "/plots",       label: "จัดการแปลง",           icon: Sprout,     badge: null  },
-  { path: "/forecast",    label: "พยากรณ์ฤดูกาล",         icon: BarChart3,  badge: null  },
+  { path: "/",             label: "หน้าหลัก",              icon: Home,       badge: null  },
+  { path: "/accounting",   label: "บัญชีรายรับ-รายจ่าย", icon: Wallet,     badge: null  },
+  { path: "/fertilizer",   label: "คำนวณปุ๋ยและยา",       icon: Calculator, badge: null  },
+  { path: "/plots",        label: "จัดการแปลง",           icon: Sprout,     badge: null  },
+  { path: "/forecast",     label: "พยากรณ์ฤดูกาล",         icon: BarChart3,  badge: null  },
+  { path: "/ai-analysis",  label: "AI วิเคราะห์ฟาร์ม",    icon: Brain,      badge: "AI"  },
 ];
 
 const notifications = [

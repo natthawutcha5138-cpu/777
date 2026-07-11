@@ -10,6 +10,7 @@ import Accounting from "@/pages/Accounting";
 import Plots from "@/pages/Plots";
 import Fertilizer from "@/pages/Fertilizer";
 import Forecast from "@/pages/Forecast";
+import AIAnalysis from "@/pages/AIAnalysis";
 import NotFound from "@/pages/not-found";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -53,7 +54,8 @@ function AppShell() {
           <Route path="/accounting" component={Accounting} />
           <Route path="/plots"      component={Plots} />
           <Route path="/fertilizer" component={Fertilizer} />
-          <Route path="/forecast"   component={Forecast} />
+          <Route path="/forecast"    component={Forecast} />
+          <Route path="/ai-analysis" component={AIAnalysis} />
           <Route component={NotFound} />
         </Switch>
       </Layout>
