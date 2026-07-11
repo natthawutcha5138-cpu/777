@@ -3,17 +3,26 @@ import { cn } from "@/lib/utils";
 import type { AuthUser } from "@/hooks/useAuth";
 import {
   Home, Wallet, Calculator, Sprout, BarChart3,
-  Bell, Search, ChevronDown, LogOut, Menu, ChevronLeft, ChevronRight, User,
+  Bell, Search, ChevronDown, LogOut, Menu, X,
+  Sun, Moon, Settings, User, ChevronLeft, ChevronRight,
+  Zap, TrendingUp,
 } from "lucide-react";
 import WeatherWidget from "@/components/WeatherWidget";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useState, useRef, useEffect } from "react";
 
 const navItems = [
-  { path: "/",            label: "หน้าหลัก",              icon: Home },
-  { path: "/accounting",  label: "บัญชีรายรับ-รายจ่าย", icon: Wallet },
-  { path: "/fertilizer",  label: "คำนวณปุ๋ยและยา",       icon: Calculator },
-  { path: "/plots",       label: "ข้อมูลแปลง",           icon: Sprout },
-  { path: "/forecast",    label: "พยากรณ์ฤดูกาล",         icon: BarChart3 },
+  { path: "/",            label: "หน้าหลัก",              icon: Home,       badge: null  },
+  { path: "/accounting",  label: "บัญชีรายรับ-รายจ่าย", icon: Wallet,     badge: null  },
+  { path: "/fertilizer",  label: "คำนวณปุ๋ยและยา",       icon: Calculator, badge: "ใหม่" },
+  { path: "/plots",       label: "จัดการแปลง",           icon: Sprout,     badge: null  },
+  { path: "/forecast",    label: "พยากรณ์ฤดูกาล",         icon: BarChart3,  badge: null  },
+];
+
+const notifications = [
+  { id: 1, title: "ถึงเวลาใส่ปุ๋ยแล้ว", body: "แปลงที่ 1 ครบกำหนดใส่ปุ๋ยสัปดาห์นี้", time: "5 นาทีที่แล้ว", unread: true, icon: "🌿" },
+  { id: 2, title: "ราคาทุเรียนพุ่งขึ้น", body: "หมอนทองวันนี้ 220 บาท/กก. สูงสุดในรอบ 3 เดือน", time: "1 ชั่วโมงที่แล้ว", unread: true, icon: "📈" },
+  { id: 3, title: "ฝนกำลังจะตก", body: "คาดการณ์ฝนตก 14:00–16:00 งดพ่นยาวันนี้", time: "2 ชั่วโมงที่แล้ว", unread: false, icon: "🌧️" },
 ];
 
 interface LayoutProps {
@@ -24,262 +33,278 @@ interface LayoutProps {
 
 export default function Layout({ children, user, onLogout }: LayoutProps) {
   const [location] = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const userMenuRef = useRef<HTMLDivElement>(null);
+  const [collapsed,     setCollapsed]     = useState(false);
+  const [mobileOpen,    setMobileOpen]    = useState(false);
+  const [showUser,      setShowUser]      = useState(false);
+  const [showNotif,     setShowNotif]     = useState(false);
+  const { theme, toggle: toggleTheme }    = useTheme();
+
+  const userRef  = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
-        setShowUserMenu(false);
-      }
+    function handler(e: MouseEvent) {
+      if (userRef.current  && !userRef.current.contains(e.target as Node))  setShowUser(false);
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) setShowNotif(false);
     }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  const unreadCount = notifications.filter(n => n.unread).length;
+  const showLabel   = !collapsed || mobileOpen;
+
   return (
-    <div className="min-h-screen flex" style={{ background: "linear-gradient(135deg, #f0fdf4 0%, #fdf2f8 50%, #fefce8 100%)" }}>
+    <div className="min-h-screen flex bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
 
       {/* Mobile overlay */}
-      {mobileSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setMobileSidebarOpen(false)}
-        />
+      {mobileOpen && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden" onClick={() => setMobileOpen(false)} />
       )}
 
       {/* ===== Sidebar ===== */}
-      <aside
-        className={cn(
-          "shrink-0 flex flex-col sticky top-0 h-screen overflow-y-auto z-50 transition-all duration-300 shadow-2xl",
-          sidebarOpen ? "w-56" : "w-[68px]",
-          /* mobile: slide in/out as fixed overlay */
-          "max-lg:fixed max-lg:left-0 max-lg:top-0 max-lg:h-screen",
-          mobileSidebarOpen ? "max-lg:translate-x-0 max-lg:w-64" : "max-lg:-translate-x-full max-lg:pointer-events-none",
-        )}
-        style={{ background: "linear-gradient(180deg, #0e1f12 0%, #152a1a 60%, #0e1f12 100%)" }}
-      >
+      <aside className={cn(
+        "shrink-0 flex flex-col sticky top-0 h-screen z-50 transition-all duration-300",
+        "bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800",
+        collapsed ? "w-[68px]" : "w-60",
+        "max-lg:fixed max-lg:left-0 max-lg:top-0 max-lg:h-screen max-lg:shadow-2xl",
+        mobileOpen ? "max-lg:translate-x-0 max-lg:w-64" : "max-lg:-translate-x-full",
+      )}>
+
         {/* Logo */}
-        <div className="p-4 pb-3 flex items-center gap-2.5 min-h-0 shrink-0">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-lg shadow-lg shrink-0">
+        <div className={cn(
+          "flex items-center gap-3 px-4 py-5 border-b border-gray-100 dark:border-gray-800 shrink-0",
+          collapsed && !mobileOpen && "px-[18px]"
+        )}>
+          <div className="w-8 h-8 rounded-xl bg-green-600 flex items-center justify-center text-sm shadow-lg shadow-green-200 dark:shadow-green-900/40 shrink-0">
             🌳
           </div>
-          {(sidebarOpen || mobileSidebarOpen) && (
-            <div className="min-w-0 flex-1">
-              <h1 className="font-bold text-[12px] text-green-300 leading-tight truncate">ทุเรียนสมาร์ทฟาร์ม</h1>
-              <p className="text-[10px] text-white/30 mt-0.5 truncate">AI Farm Management</p>
+          {showLabel && (
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-gray-900 dark:text-white truncate leading-tight">ทุเรียนฟาร์ม</p>
+              <p className="text-[10px] text-gray-400 font-medium tracking-wide">AI Management</p>
             </div>
           )}
           <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="hidden lg:flex ml-auto p-1 rounded-lg text-white/30 hover:text-green-400 hover:bg-white/10 transition-colors shrink-0"
-            title={sidebarOpen ? "ย่อเมนู" : "ขยายเมนู"}
+            onClick={() => setCollapsed(!collapsed)}
+            className="hidden lg:flex w-6 h-6 items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all ml-auto shrink-0"
           >
-            {sidebarOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+            {collapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
           </button>
         </div>
 
-        <div className="mx-3 h-px bg-white/10 mb-3" />
-
-        {/* Navigation */}
-        <nav className="px-2 space-y-0.5 flex-1">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location === item.path;
-            const showLabel = sidebarOpen || mobileSidebarOpen;
+        {/* Nav */}
+        <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
+          {navItems.map(({ path, label, icon: Icon, badge }) => {
+            const active = location === path;
             return (
               <Link
-                key={item.path}
-                href={item.path}
-                onClick={() => setMobileSidebarOpen(false)}
+                key={path}
+                href={path}
+                onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium no-underline",
-                  !showLabel && "justify-center px-2",
-                  isActive
-                    ? "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-900/50"
-                    : "text-white/55 hover:bg-white/10 hover:text-white",
+                  "group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 text-sm font-medium no-underline relative",
+                  !showLabel && "justify-center px-[18px]",
+                  active
+                    ? "bg-green-50 dark:bg-green-950/60 text-green-700 dark:text-green-400"
+                    : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/60 hover:text-gray-900 dark:hover:text-gray-100"
                 )}
-                title={!showLabel ? item.label : undefined}
+                title={!showLabel ? label : undefined}
               >
-                <Icon className="w-[18px] h-[18px] shrink-0" />
-                {showLabel && <span className="text-[13px] truncate">{item.label}</span>}
+                {active && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-green-600 rounded-full" />}
+                <Icon className={cn("w-[18px] h-[18px] shrink-0 transition-transform duration-150 group-hover:scale-105", active && "text-green-600 dark:text-green-400")} />
+                {showLabel && (
+                  <span className="flex-1 truncate">{label}</span>
+                )}
+                {showLabel && badge && (
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 bg-green-100 dark:bg-green-900/60 text-green-700 dark:text-green-400 rounded-full">
+                    {badge}
+                  </span>
+                )}
               </Link>
             );
           })}
         </nav>
 
-        {/* Durian farm illustration */}
-        {(sidebarOpen || mobileSidebarOpen) && (
-          <div className="mx-3 mt-2 rounded-2xl overflow-hidden relative" style={{ background: "linear-gradient(180deg, #1a3a20 0%, #2d5a1b 50%, #4a7c2a 100%)" }}>
-            {/* Sky + clouds */}
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute top-1 left-3 w-8 h-3 bg-white/20 rounded-full" />
-              <div className="absolute top-2 left-6 w-5 h-2 bg-white/15 rounded-full" />
-              <div className="absolute top-1 right-4 w-6 h-2.5 bg-white/15 rounded-full" />
-            </div>
-            {/* Scene SVG */}
-            <svg viewBox="0 0 180 110" xmlns="http://www.w3.org/2000/svg" className="w-full">
-              {/* Ground */}
-              <ellipse cx="90" cy="100" rx="95" ry="18" fill="#2d5a1b" />
-              {/* House */}
-              <rect x="20" y="58" width="38" height="30" rx="2" fill="#e8d5a3" />
-              <polygon points="20,58 39,38 58,58" fill="#c0392b" />
-              <rect x="32" y="70" width="10" height="18" rx="1" fill="#8b6914" />
-              <rect x="24" y="63" width="8" height="8" rx="1" fill="#7ecbf5" />
-              <rect x="46" y="63" width="8" height="8" rx="1" fill="#7ecbf5" />
-              {/* Tree left */}
-              <rect x="72" y="65" width="4" height="25" rx="1" fill="#5d4037" />
-              <ellipse cx="74" cy="55" rx="14" ry="16" fill="#2e7d32" />
-              <ellipse cx="74" cy="52" rx="10" ry="12" fill="#388e3c" />
-              {/* Big durian */}
-              <ellipse cx="120" cy="68" rx="22" ry="26" fill="#8d6e28" />
-              <ellipse cx="120" cy="68" rx="19" ry="23" fill="#a0874a" />
-              {/* Durian spikes */}
+        {/* Durian illustration */}
+        {showLabel && (
+          <div className="mx-3 mb-2 rounded-2xl overflow-hidden relative shrink-0" style={{ background: "linear-gradient(180deg, #1a3a20 0%, #2d5a1b 50%, #4a7c2a 100%)" }}>
+            <svg viewBox="0 0 180 100" xmlns="http://www.w3.org/2000/svg" className="w-full">
+              <ellipse cx="90" cy="95" rx="95" ry="14" fill="#2d5a1b" />
+              <rect x="22" y="58" width="36" height="28" rx="2" fill="#e8d5a3" />
+              <polygon points="22,58 40,40 58,58" fill="#c0392b" />
+              <rect x="33" y="70" width="10" height="16" rx="1" fill="#8b6914" />
+              <rect x="25" y="63" width="7" height="7" rx="1" fill="#7ecbf5" />
+              <rect x="46" y="63" width="7" height="7" rx="1" fill="#7ecbf5" />
+              <rect x="73" y="62" width="4" height="24" rx="1" fill="#5d4037" />
+              <ellipse cx="75" cy="52" rx="14" ry="16" fill="#2e7d32" />
+              <ellipse cx="75" cy="49" rx="10" ry="12" fill="#388e3c" />
+              <ellipse cx="122" cy="65" rx="22" ry="26" fill="#8d6e28" />
+              <ellipse cx="122" cy="65" rx="19" ry="23" fill="#a0874a" />
               {[[-14,-18],[0,-25],[14,-18],[18,-5],[15,10],[0,20],[-15,10],[-18,-5]].map(([dx,dy], i) => (
-                <polygon key={i}
-                  points={`${120+dx},${68+dy} ${120+dx-3},${68+dy+6} ${120+dx+3},${68+dy+6}`}
-                  fill="#7a5c20"
-                />
+                <polygon key={i} points={`${122+dx!},${65+dy!} ${122+dx!-3},${65+dy!+6} ${122+dx!+3},${65+dy!+6}`} fill="#7a5c20" />
               ))}
-              {/* Durian segments */}
-              <path d="M120,45 Q130,55 120,90 Q110,55 120,45" fill="#c9a84c" opacity="0.5" />
-              <path d="M120,45 Q108,60 102,80 Q118,62 120,45" fill="#c9a84c" opacity="0.4" />
-              <path d="M120,45 Q132,60 138,80 Q122,62 120,45" fill="#c9a84c" opacity="0.4" />
-              {/* Stars/sparkles */}
-              <text x="152" y="30" fontSize="10" fill="#ffd700" opacity="0.8">✦</text>
-              <text x="10" y="35" fontSize="8" fill="#ffd700" opacity="0.6">✦</text>
-              <text x="95" y="20" fontSize="7" fill="#fff" opacity="0.5">✦</text>
+              <path d="M122,42 Q132,52 122,88 Q112,52 122,42" fill="#c9a84c" opacity="0.5" />
             </svg>
           </div>
         )}
 
-        {/* Compact Weather — only when expanded */}
-        {(sidebarOpen || mobileSidebarOpen) && (
-          <div className="px-2 mt-2">
-            <div className="rounded-xl overflow-hidden">
-              <WeatherWidget compact />
-            </div>
+        {/* Weather — only when expanded */}
+        {showLabel && (
+          <div className="px-2 mb-2 shrink-0">
+            <WeatherWidget compact />
           </div>
         )}
 
-        {/* User row */}
-        <div className="p-3 border-t border-white/10 mt-2 shrink-0">
-          {(sidebarOpen || mobileSidebarOpen) ? (
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-md">
+        {/* Dark mode + user */}
+        <div className="px-2 pb-3 space-y-1 border-t border-gray-100 dark:border-gray-800 pt-2 shrink-0">
+          <button
+            onClick={toggleTheme}
+            className={cn(
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
+              !showLabel && "justify-center px-[18px]",
+              "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/60 hover:text-gray-900 dark:hover:text-gray-100"
+            )}
+            title={!showLabel ? (theme === "dark" ? "โหมดสว่าง" : "โหมดมืด") : undefined}
+          >
+            {theme === "dark"
+              ? <Sun className="w-[18px] h-[18px] shrink-0" />
+              : <Moon className="w-[18px] h-[18px] shrink-0" />}
+            {showLabel && <span>{theme === "dark" ? "โหมดสว่าง" : "โหมดมืด"}</span>}
+          </button>
+
+          {showLabel ? (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-all">
+              <div className="w-7 h-7 rounded-lg bg-green-100 dark:bg-green-900/50 flex items-center justify-center text-green-700 dark:text-green-400 text-xs font-bold shrink-0">
                 {user.displayName.charAt(0)}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-white/80 truncate">{user.displayName}</p>
-                <p className="text-[10px] text-white/30">เจ้าของสวน</p>
+                <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">{user.displayName}</p>
+                <p className="text-[10px] text-gray-400">เจ้าของสวน</p>
               </div>
-              <button
-                onClick={onLogout}
-                title="ออกจากระบบ"
-                className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-              >
+              <button onClick={onLogout} title="ออกจากระบบ" className="p-1 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                 <LogOut className="w-3.5 h-3.5" />
               </button>
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center text-white text-xs font-bold shadow-md">
+            <div className="flex flex-col items-center gap-1">
+              <div className="w-7 h-7 rounded-lg bg-green-100 dark:bg-green-900/50 flex items-center justify-center text-green-700 dark:text-green-400 text-xs font-bold">
                 {user.displayName.charAt(0)}
               </div>
-              <button
-                onClick={onLogout}
-                title="ออกจากระบบ"
-                className="p-1 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-              </button>
             </div>
           )}
         </div>
       </aside>
 
-      {/* ===== Main area ===== */}
+      {/* ===== Main ===== */}
       <div className="flex-1 flex flex-col min-w-0">
 
-        {/* Top Header */}
-        <header className="bg-white/80 backdrop-blur-md border-b border-white/60 px-4 py-2 flex items-center gap-3 sticky top-0 z-30 shadow-sm">
-          {/* Mobile hamburger */}
+        {/* Topbar */}
+        <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 px-4 py-2.5 flex items-center gap-3">
           <button
-            className="lg:hidden p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors cursor-pointer"
-            onClick={() => setMobileSidebarOpen(v => !v)}
+            className="lg:hidden p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            onClick={() => setMobileOpen(v => !v)}
           >
-            <Menu className="w-5 h-5" />
+            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
-          <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-bold text-gray-800 truncate">
-              สวัสดี, {user.displayName}
-            </h2>
-            <p className="text-[10px] text-gray-400 hidden sm:block">ระบบบริหารจัดการสวนทุเรียนอัจฉริยะ</p>
-          </div>
-
-          <div className="relative hidden md:block">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+          {/* Search */}
+          <div className="relative flex-1 max-w-xs hidden md:block">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
             <input
-              placeholder="ค้นหาข้อมูล..."
-              className="pl-8 pr-3 py-1.5 bg-gray-100 hover:bg-gray-200 focus:bg-white focus:ring-2 focus:ring-green-300 rounded-lg text-xs w-44 outline-none transition-all"
+              placeholder="ค้นหา..."
+              className="w-full pl-9 pr-3 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 focus:bg-white dark:focus:bg-gray-800 border border-transparent focus:border-green-300 dark:focus:border-green-700 rounded-xl text-sm text-gray-700 dark:text-gray-200 placeholder:text-gray-400 outline-none transition-all"
             />
           </div>
 
-          {/* Bell */}
-          <button className="relative w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors shrink-0 cursor-pointer">
-            <Bell className="w-3.5 h-3.5 text-gray-500" />
-            <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-pink-500 text-white text-[8px] rounded-full flex items-center justify-center font-bold">3</span>
+          <div className="flex-1" />
+
+          {/* Dark mode toggle (topbar) */}
+          <button
+            onClick={toggleTheme}
+            className="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+          >
+            {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
 
-          {/* ===== User Dropdown ===== */}
-          <div className="relative shrink-0" ref={userMenuRef}>
+          {/* Notifications */}
+          <div className="relative" ref={notifRef}>
             <button
-              type="button"
-              onClick={() => setShowUserMenu(v => !v)}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer select-none"
+              onClick={() => setShowNotif(v => !v)}
+              className="relative w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
             >
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center text-white text-[10px] font-bold">
-                {user.displayName.charAt(0)}
-              </div>
-              <span className="text-xs font-medium text-gray-700 hidden md:inline">{user.displayName}</span>
-              <ChevronDown className={cn("w-3 h-3 text-gray-400 transition-transform duration-200", showUserMenu && "rotate-180")} />
+              <Bell className="w-4 h-4" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-green-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
             </button>
 
-            {showUserMenu && (
-              <div
-                className="absolute right-0 top-full mt-2 w-52 rounded-2xl shadow-2xl border border-gray-100 py-1.5 overflow-hidden"
-                style={{ background: "#fff", zIndex: 9999 }}
-              >
-                <div className="px-4 py-3 border-b border-gray-100">
+            {showNotif && (
+              <div className="absolute right-0 top-full mt-2 w-80 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden z-50">
+                <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">การแจ้งเตือน</p>
+                  <span className="text-xs text-gray-400">{unreadCount} ใหม่</span>
+                </div>
+                <div className="divide-y divide-gray-50 dark:divide-gray-800">
+                  {notifications.map(n => (
+                    <div key={n.id} className={cn("flex gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/60 cursor-pointer transition-colors", n.unread && "bg-green-50/50 dark:bg-green-950/20")}>
+                      <span className="text-xl shrink-0 mt-0.5">{n.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-gray-800 dark:text-gray-100">{n.title}</p>
+                        <p className="text-[11px] text-gray-500 mt-0.5 leading-relaxed">{n.body}</p>
+                        <p className="text-[10px] text-gray-400 mt-1">{n.time}</p>
+                      </div>
+                      {n.unread && <div className="w-2 h-2 bg-green-500 rounded-full shrink-0 mt-1.5" />}
+                    </div>
+                  ))}
+                </div>
+                <div className="px-4 py-2.5 border-t border-gray-100 dark:border-gray-800 text-center">
+                  <button className="text-xs text-green-600 font-semibold hover:underline">ดูทั้งหมด</button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* User menu */}
+          <div className="relative shrink-0" ref={userRef}>
+            <button
+              onClick={() => setShowUser(v => !v)}
+              className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+            >
+              <div className="w-7 h-7 rounded-lg bg-green-100 dark:bg-green-900/50 flex items-center justify-center text-green-700 dark:text-green-400 text-xs font-bold">
+                {user.displayName.charAt(0)}
+              </div>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-200 hidden md:inline">{user.displayName}</span>
+              <ChevronDown className={cn("w-3.5 h-3.5 text-gray-400 transition-transform duration-200", showUser && "rotate-180")} />
+            </button>
+
+            {showUser && (
+              <div className="absolute right-0 top-full mt-2 w-52 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden z-50">
+                <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center text-white text-sm font-bold">
+                    <div className="w-9 h-9 rounded-xl bg-green-100 dark:bg-green-900/50 flex items-center justify-center text-green-700 dark:text-green-400 font-bold">
                       {user.displayName.charAt(0)}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-gray-800">{user.displayName}</p>
+                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{user.displayName}</p>
                       <p className="text-xs text-gray-400">เจ้าของสวน</p>
                     </div>
                   </div>
                 </div>
-                <div className="px-1.5 py-1">
-                  <button
-                    type="button"
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
-                    onClick={() => setShowUserMenu(false)}
-                  >
-                    <User className="w-4 h-4 text-gray-400" />
-                    โปรไฟล์ของฉัน
+                <div className="p-1.5 space-y-0.5">
+                  <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    <User className="w-4 h-4 text-gray-400" />โปรไฟล์
+                  </button>
+                  <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    <Settings className="w-4 h-4 text-gray-400" />ตั้งค่า
                   </button>
                   <button
-                    type="button"
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-colors mt-0.5 cursor-pointer"
-                    onClick={() => { setShowUserMenu(false); onLogout(); }}
+                    onClick={() => { setShowUser(false); onLogout(); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                   >
-                    <LogOut className="w-4 h-4" />
-                    ออกจากระบบ
+                    <LogOut className="w-4 h-4" />ออกจากระบบ
                   </button>
                 </div>
               </div>
@@ -287,7 +312,7 @@ export default function Layout({ children, user, onLogout }: LayoutProps) {
           </div>
         </header>
 
-        <main className="flex-1 p-4 overflow-auto">
+        <main className="flex-1 p-5 overflow-auto">
           {children}
         </main>
       </div>

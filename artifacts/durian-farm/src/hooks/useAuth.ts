@@ -7,6 +7,8 @@ export interface AuthUser {
 }
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+const AUTO_USER = "farmowner";
+const AUTO_PASS = "durian2024";
 
 async function apiFetch(path: string, opts?: RequestInit) {
   return fetch(`${BASE}${path}`, {
@@ -25,6 +27,23 @@ async function safeJson(res: Response): Promise<unknown> {
   }
 }
 
+async function autoLogin(): Promise<AuthUser | null> {
+  try {
+    const loginRes = await apiFetch("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ username: AUTO_USER, password: AUTO_PASS }),
+    });
+    if (loginRes.ok) return (await loginRes.json()) as AuthUser;
+
+    const regRes = await apiFetch("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ username: AUTO_USER, password: AUTO_PASS, displayName: "เจ้าของสวน" }),
+    });
+    if (regRes.ok) return (await regRes.json()) as AuthUser;
+  } catch { /* ignore */ }
+  return null;
+}
+
 export function useAuth() {
   const [user,    setUser]    = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,10 +51,17 @@ export function useAuth() {
   const refresh = useCallback(async () => {
     try {
       const res = await apiFetch("/api/auth/me");
-      if (res.ok) setUser(await res.json());
-      else        setUser(null);
-    } catch { setUser(null); }
-    finally  { setLoading(false); }
+      if (res.ok) {
+        setUser(await res.json());
+      } else {
+        const auto = await autoLogin();
+        setUser(auto);
+      }
+    } catch {
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => { refresh(); }, [refresh]);
@@ -62,7 +88,8 @@ export function useAuth() {
 
   const logout = useCallback(async () => {
     try { await apiFetch("/api/auth/logout", { method: "POST" }); } catch { /* ignore */ }
-    setUser(null);
+    const auto = await autoLogin();
+    setUser(auto);
   }, []);
 
   return { user, loading, login, register, logout };

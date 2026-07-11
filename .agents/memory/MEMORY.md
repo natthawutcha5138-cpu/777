@@ -1,1 +1,3 @@
-- [Real farm photos](farm-photos.md) — real durian/farm images stored in `artifacts/durian-farm/public/images/`; Unsplash CDN works but Wikimedia/Pixabay blocked in this sandbox.
+- [DurianFarm Auth Pattern](auth-pattern.md) — auto-login on 401 with farmowner/durian2024 credentials; no login page
+- [DurianFarm Dark Mode](dark-mode.md) — CSS class-based dark mode via ThemeContext; .dark on <html>
+- [DurianFarm API Race](api-race.md) — dashboard queries gated with enabled: !!user?.id to avoid 401 before auth
