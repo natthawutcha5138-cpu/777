@@ -18,33 +18,11 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "API Server"
+args = "artifacts/api-server: API Server"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "DurianFarm Web"
-
-[[workflows.workflow]]
-name = "API Server"
-author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "console"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "PORT=8080 pnpm --filter @workspace/api-server run dev"
-
-[[workflows.workflow]]
-name = "DurianFarm Web"
-author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "webview"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "PORT=24275 pnpm --filter @workspace/durian-farm run dev"
+args = "artifacts/durian-farm: web"
 
 [agent]
 stack = "PNPM_WORKSPACE"
