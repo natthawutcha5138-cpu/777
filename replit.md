@@ -4,9 +4,10 @@ A Thai-language smart farm management system for durian orchards. Includes a web
 
 ## Run & Operate
 
-- **Start API server** — run the "API Server" workflow (port 5000)
-- **Start web app** — run the "DurianFarm Web" workflow (port 8080, proxies `/api` → port 5000)
+- **Start API server** — run the "API Server" workflow (port 8080)
+- **Start web app** — run the "DurianFarm Web" workflow (port 24275)
 - Both workflows must be running for the full app to work
+- The application router (`router = "application"` in `.replit`) routes `/` → port 24275 and `/api` → port 8080
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
@@ -15,8 +16,8 @@ A Thai-language smart farm management system for durian orchards. Includes a web
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- **Web**: React + Vite + shadcn/ui + Tailwind CSS (port 8080)
-- **API**: Express 5 (port 5000)
+- **Web**: React + Vite + shadcn/ui + Tailwind CSS (port 24275)
+- **API**: Express 5 (port 8080)
 - **DB**: PostgreSQL + Drizzle ORM (Replit-managed, `DATABASE_URL` injected automatically)
 - **Mobile**: Expo React Native (`artifacts/durian-farm-mobile`)
 - Validation: Zod (`zod/v4`), `drizzle-zod`
@@ -35,7 +36,7 @@ A Thai-language smart farm management system for durian orchards. Includes a web
 
 ## Architecture decisions
 
-- API calls from the web app use relative `/api/...` paths; Vite dev server proxies them to the API server on port 5000 (`API_PORT` env var, defaults to 5000)
+- API calls from the web app use relative `/api/...` paths; the application router forwards them directly to the API server on port 8080 — no Vite proxy needed
 - `DATABASE_URL` and other `PG*` vars are runtime-managed by Replit — do not set them manually
 - `SESSION_SECRET` is stored as a Replit Secret
 - The dev command for the API server does a full esbuild compile before starting (by design — no watch mode)
@@ -50,7 +51,8 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-- The API Server workflow doesn't use `waitForPort` (the build step + port check caused timeouts). The server IS running if you see "Server listening port: 5000" in its logs.
+- The API Server workflow doesn't use `waitForPort` (the build step + port check caused timeouts). The server IS running if you see "Server listening port: 8080" in its logs.
+- If the API server fails with `EADDRINUSE` on restart, run `lsof -ti:8080 | xargs kill -9` to clear the stale process.
 - Run `pnpm --filter @workspace/db run push` any time the Drizzle schema changes.
 - Do not regenerate `lib/api-client-react/` or `lib/api-zod/` by hand — run the codegen script.
 
