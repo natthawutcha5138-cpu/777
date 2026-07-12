@@ -5,6 +5,7 @@ import {
 } from "@workspace/api-client-react";
 import { cn } from "@/lib/utils";
 import { MONTHS_TH, EXPENSE_CATEGORIES } from "@/lib/utils";
+import { ChartTooltip } from "@/components/charts/ChartTooltip";
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -123,24 +124,11 @@ function RecommendCard({ priority, title, detail, action, done }: { priority: PL
   );
 }
 
-/* ─── Custom chart tooltip ─── */
-const ChartTip = ({ active, payload, label }: any) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-100 dark:border-gray-800 p-3 text-xs">
-      <p className="font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{label}</p>
-      {payload.map((p: any) => (
-        <div key={p.name} className="flex items-center gap-2 mb-0.5">
-          <div className="w-2 h-2 rounded-full" style={{ background: p.color }} />
-          <span className="text-gray-500">{p.name}:</span>
-          <span className="font-bold text-gray-800 dark:text-gray-200">
-            {typeof p.value === "number" ? p.value.toLocaleString("th-TH") : p.value}
-            {p.name?.includes("ประสิทธิภาพ") || p.name?.includes("ความเสี่ยง") ? "%" : ""}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
+/* ─── Custom chart tooltip formatter (percent for score/risk series) ─── */
+const aiAnalysisTooltipFormatter = (value: number, seriesName?: string) => {
+  const formatted = value.toLocaleString("th-TH");
+  const isPercent = seriesName?.includes("ประสิทธิภาพ") || seriesName?.includes("ความเสี่ยง");
+  return isPercent ? `${formatted}%` : formatted;
 };
 
 /* ─── MAIN PAGE ─── */
@@ -412,7 +400,7 @@ export default function AIAnalysis() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
         {/* Radar */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 hover:shadow-md dark:hover:shadow-gray-900/40 transition-all">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 hover:shadow-md dark:hover:shadow-gray-900/40 transition-all stagger-1">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-7 h-7 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
               <Activity className="w-4 h-4 text-purple-600 dark:text-purple-400" />
@@ -432,7 +420,7 @@ export default function AIAnalysis() {
         </div>
 
         {/* Profit Trend */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 hover:shadow-md dark:hover:shadow-gray-900/40 transition-all lg:col-span-2">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 hover:shadow-md dark:hover:shadow-gray-900/40 transition-all lg:col-span-2 stagger-2">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg bg-green-100 dark:bg-green-900/40 flex items-center justify-center">
@@ -461,7 +449,7 @@ export default function AIAnalysis() {
                 <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="opacity-5" />
                 <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
                 <YAxis tickFormatter={v => `${(v/1000).toFixed(0)}K`} tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-                <Tooltip content={<ChartTip />} />
+                <Tooltip content={<ChartTooltip valueFormatter={aiAnalysisTooltipFormatter} />} />
                 <ReferenceLine y={0} stroke="#ef4444" strokeDasharray="4 2" strokeWidth={1.5} />
                 <Area dataKey="กำไร" stroke="#16a34a" strokeWidth={2.5} fill="url(#profitGrad)" dot={{ r: 3, fill: "#16a34a", stroke: "#fff", strokeWidth: 2 }} type="monotone" />
               </AreaChart>
@@ -506,263 +494,159 @@ export default function AIAnalysis() {
         {/* 2. Disease Risk */}
         <div className={cn("rounded-2xl border p-5 space-y-4 hover:shadow-md transition-all",
           diseaseRisk >= 60 ? "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800" :
-          diseaseRisk >= 40 ? "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800" :
-          "bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800")}>
+          diseaseRisk >= 40 ? "bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800" :
+          "bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800"
+        )}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center", diseaseRisk >= 60 ? "bg-red-100 dark:bg-red-900/40" : diseaseRisk >= 40 ? "bg-amber-100 dark:bg-amber-900/40" : "bg-green-100 dark:bg-green-900/40")}>
-                <ShieldAlert className={cn("w-4 h-4", diseaseRisk >= 60 ? "text-red-600" : diseaseRisk >= 40 ? "text-amber-600" : "text-green-600")} />
+              <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center", diseaseRisk >= 60 ? "bg-red-100 dark:bg-red-900/40" : "bg-amber-100 dark:bg-amber-900/40")}>
+                <ShieldAlert className={cn("w-4 h-4", diseaseRisk >= 60 ? "text-red-600 dark:text-red-400" : "text-amber-600 dark:text-amber-400")} />
               </div>
-              <p className="text-sm font-bold text-gray-900 dark:text-white">ความเสี่ยงโรค</p>
+              <p className="text-sm font-bold text-gray-900 dark:text-white">ความเสี่ยงโรคพืช</p>
             </div>
             <span className={cn("text-lg font-extrabold", diseaseRisk >= 60 ? "text-red-600" : diseaseRisk >= 40 ? "text-amber-600" : "text-green-600")}>
-              {diseaseRisk}%
+              {isLoading ? "—" : `${diseaseRisk}%`}
             </span>
           </div>
-          <div className="space-y-2.5">
-            {[
-              { label: "ราน้ำค้าง",  risk: diseaseRisk > 60 ? 75 : 30 },
-              { label: "ผลเน่า",      risk: diseaseRisk > 50 ? 55 : 20 },
-              { label: "แมลงศัตรู",   risk: Math.round(diseaseRisk * 0.6) },
-            ].map(d => (
-              <ProgressBar key={d.label} value={d.risk} label={d.label} color={d.risk >= 60 ? "bg-red-500" : d.risk >= 40 ? "bg-amber-400" : "bg-green-500"} />
-            ))}
-          </div>
-          <p className="text-[11px] leading-relaxed" style={{ color: diseaseRisk >= 60 ? "#dc2626" : diseaseRisk >= 40 ? "#d97706" : "#16a34a" }}>
-            {diseaseRisk >= 60 ? "🚨 ความเสี่ยงสูงมาก พ่นยาทันที!" : diseaseRisk >= 40 ? "⚠️ ความเสี่ยงปานกลาง เฝ้าระวัง" : "✅ ความเสี่ยงต่ำ สถานการณ์ปกติ"}
+          {isLoading ? <Skeleton className="h-24" /> : (
+            <div className="space-y-3">
+              <ProgressBar value={diseaseRisk} label="ความเสี่ยงโรคราน้ำค้าง" color={diseaseRisk >= 60 ? "bg-red-500" : diseaseRisk >= 40 ? "bg-amber-400" : "bg-green-500"} />
+              <div className="flex gap-2">
+                <div className="flex-1 bg-white/50 dark:bg-black/20 p-2 rounded-xl border border-black/5 dark:border-white/5">
+                  <p className="text-[10px] text-gray-500">สภาพอากาศ</p>
+                  <p className="text-[11px] font-bold text-gray-800 dark:text-gray-200">ชื้นสูง</p>
+                </div>
+                <div className="flex-1 bg-white/50 dark:bg-black/20 p-2 rounded-xl border border-black/5 dark:border-white/5">
+                  <p className="text-[10px] text-gray-500">ฤดูกาล</p>
+                  <p className="text-[11px] font-bold text-gray-800 dark:text-gray-200">{MONTHS_TH[month - 1]}</p>
+                </div>
+              </div>
+            </div>
+          )}
+          <p className="text-[11px] text-gray-400 leading-relaxed">
+            {diseaseRisk >= 60 ? "🚨 ความเสี่ยงสูงมาก แนะนำพ่นยาป้องกันทันทีก่อนฝนตก" : diseaseRisk >= 40 ? "⚠️ ควรเฝ้าระวังและตรวจแปลงอย่างใกล้ชิด" : "✅ ความเสี่ยงต่ำ แต่อย่าประมาท"}
           </p>
         </div>
 
-        {/* 3. Water Usage */}
+        {/* 3. Cost & Efficiency */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 space-y-4 hover:shadow-md dark:hover:shadow-gray-900/40 transition-all">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
-                <Droplets className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <DollarSign className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               </div>
-              <p className="text-sm font-bold text-gray-900 dark:text-white">การใช้น้ำ</p>
+              <p className="text-sm font-bold text-gray-900 dark:text-white">โครงสร้างต้นทุน</p>
             </div>
-            <span className={cn("text-lg font-extrabold", waterEfficiency >= 70 ? "text-blue-600" : waterEfficiency >= 50 ? "text-amber-600" : "text-red-500")}>
-              {waterEfficiency}%
+            <span className={cn("text-lg font-extrabold", roi > 20 ? "text-green-600" : roi > 0 ? "text-blue-600" : "text-amber-600")}>
+              {isLoading ? "—" : `ROI ${roi}%`}
             </span>
           </div>
-          <div className="space-y-2.5">
-            <ProgressBar value={waterEfficiency} label="ประสิทธิภาพรวม" color="bg-blue-500" />
-            <ProgressBar value={waterCost > 0 ? Math.min(100, 100 - (waterCost / Math.max(totalExpense,1)) * 200) : 70} label="ต้นทุนน้ำต่อไร่" color="bg-teal-500" sub={waterCost > 0 ? `${waterCost.toLocaleString("th-TH")} ฿` : "ไม่มีข้อมูล"} />
-            <ProgressBar value={month >= 3 && month <= 6 ? 80 : 55} label="ความเหมาะสมฤดูกาล" color="bg-cyan-500" />
-          </div>
+          {isLoading ? <Skeleton className="h-24" /> : (
+            <div className="space-y-2.5">
+              {expByCategory.slice(0, 3).map((item, i) => {
+                const pct = totalExpense > 0 ? (item.amount / totalExpense) * 100 : 0;
+                return (
+                  <ProgressBar key={item.cat} value={pct} label={item.cat} sub={`${Math.round(pct)}%`} color={i === 0 ? "bg-blue-500" : i === 1 ? "bg-blue-400" : "bg-blue-300"} />
+                );
+              })}
+              {expByCategory.length === 0 && <p className="text-xs text-center text-gray-400 py-4">ไม่มีข้อมูลรายจ่าย</p>}
+            </div>
+          )}
           <p className="text-[11px] text-gray-400 leading-relaxed">
-            {waterEfficiency >= 70 ? "✅ การใช้น้ำมีประสิทธิภาพดี" : "💡 แนะนำระบบน้ำหยดประหยัดน้ำ 40-60%"}
+            {expByCategory[0] ? `💡 รายจ่ายหลักคือ ${expByCategory[0].cat} ควรมุ่งลดต้นทุนส่วนนี้ก่อนเป็นอันดับแรก` : "💡 บันทึกรายจ่ายเพื่อดูโครงสร้างต้นทุน"}
           </p>
         </div>
 
-        {/* 4. Fertilizer Efficiency */}
+        {/* 4. Forecast Summary */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 space-y-4 hover:shadow-md dark:hover:shadow-gray-900/40 transition-all">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
-                <Sprout className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
+                <Star className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               </div>
-              <p className="text-sm font-bold text-gray-900 dark:text-white">ประสิทธิภาพปุ๋ย</p>
+              <p className="text-sm font-bold text-gray-900 dark:text-white">คาดการณ์ผลผลิต</p>
             </div>
-            <span className={cn("text-lg font-extrabold", fertEfficiency >= 70 ? "text-emerald-600" : fertEfficiency >= 50 ? "text-amber-600" : "text-red-500")}>
-              {fertEfficiency}%
+            <span className={cn("text-lg font-extrabold text-amber-600")}>
+              {isLoading ? "—" : `${forecastedYield} ตัน`}
             </span>
           </div>
-          <div className="space-y-2.5">
-            <ProgressBar value={fertEfficiency} label="ประสิทธิภาพรวม" color="bg-emerald-500" />
-            <ProgressBar value={fertCost > 0 ? Math.min(100, 80 - (fertCost / Math.max(totalExpense,1)) * 100) : 60} label="สัดส่วนต้นทุนปุ๋ย" color="bg-green-500" sub={fertCost > 0 ? `${Math.round((fertCost/Math.max(totalExpense,1))*100)}% ของรายจ่าย` : "ไม่มีข้อมูล"} />
-            <ProgressBar value={75} label="ตรงตามสูตรแนะนำ" color="bg-lime-500" />
-          </div>
+          {isLoading ? <Skeleton className="h-24" /> : (
+            <div className="space-y-3">
+              <div className="flex items-baseline justify-between border-b border-gray-100 dark:border-gray-800 pb-2">
+                <span className="text-xs text-gray-500">ผลผลิตปีที่แล้ว</span>
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{prevYield.toFixed(1)} ตัน</span>
+              </div>
+              <div className="flex items-baseline justify-between border-b border-gray-100 dark:border-gray-800 pb-2">
+                <span className="text-xs text-gray-500">ส่วนต่าง (YoY)</span>
+                <span className={cn("text-sm font-bold", (forecast?.yoyChange ?? 0) >= 0 ? "text-green-600" : "text-red-500")}>
+                  {(forecast?.yoyChange ?? 0) >= 0 ? "+" : ""}{forecast?.yoyChange ?? 0}%
+                </span>
+              </div>
+              <div className="flex items-baseline justify-between">
+                <span className="text-xs text-gray-500">รายรับคาดการณ์</span>
+                <span className="text-sm font-bold text-green-600 dark:text-green-400">{Math.round((forecast?.forecastedIncome ?? 0) / 1000)}K ฿</span>
+              </div>
+            </div>
+          )}
           <p className="text-[11px] text-gray-400 leading-relaxed">
-            {fertEfficiency >= 70 ? "✅ ใช้ปุ๋ยได้ประสิทธิภาพดี" : "💡 ปรับสูตรปุ๋ยตามระยะการเจริญเติบโต"}
+            อ้างอิงจากข้อมูล {totalTrees} ต้น ร่วมกับแนวโน้มราคาตลาดและสภาพอากาศปัจจุบัน
           </p>
         </div>
+
       </div>
 
-      {/* ── 2nd row: 4 more cards ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-
-        {/* 5. Weather Impact */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 space-y-4 hover:shadow-md dark:hover:shadow-gray-900/40 transition-all">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-8 h-8 rounded-xl bg-sky-100 dark:bg-sky-900/40 flex items-center justify-center">
-              <CloudRain className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-            </div>
-            <p className="text-sm font-bold text-gray-900 dark:text-white">ผลกระทบสภาพอากาศ</p>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { label: "อุณหภูมิ", val: "28°C", status: "ดี", ok: true, emoji: "🌡️" },
-              { label: "ความชื้น", val: "85%",  status: "สูง", ok: false, emoji: "💧" },
-              { label: "โอกาสฝน", val: "93%",  status: "เสี่ยง", ok: false, emoji: "🌧️" },
-              { label: "ลม",      val: "14 km/h", status: "ดี", ok: true, emoji: "🌬️" },
-            ].map(w => (
-              <div key={w.label} className={cn("rounded-xl p-2.5 text-center", w.ok ? "bg-gray-50 dark:bg-gray-800/60" : "bg-amber-50 dark:bg-amber-950/30")}>
-                <div className="text-lg mb-0.5">{w.emoji}</div>
-                <p className="text-xs font-bold text-gray-800 dark:text-gray-200">{w.val}</p>
-                <p className={cn("text-[10px] font-medium", w.ok ? "text-gray-400" : "text-amber-600 dark:text-amber-400")}>{w.status}</p>
-              </div>
-            ))}
-          </div>
-          <p className="text-[11px] text-amber-600 dark:text-amber-400">⚠️ ความชื้นสูง — เสี่ยงโรคราน้ำค้าง</p>
-        </div>
-
-        {/* 6. Harvest Prediction */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 space-y-4 hover:shadow-md dark:hover:shadow-gray-900/40 transition-all">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
-              <CalendarClock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-            </div>
-            <p className="text-sm font-bold text-gray-900 dark:text-white">พยากรณ์เก็บเกี่ยว</p>
-          </div>
-          <div className="text-center py-2">
-            <p className="text-3xl font-extrabold text-amber-600 dark:text-amber-400">
-              {forecastedYield > 0 ? `${forecastedYield}` : "—"}
-              <span className="text-base font-semibold ml-1">ตัน</span>
-            </p>
-            <p className="text-xs text-gray-400 mt-1">คาดการณ์ผลผลิตปีนี้</p>
-            {forecast && (
-              <div className={cn("inline-flex items-center gap-1 mt-2 text-xs font-semibold px-2.5 py-1 rounded-lg", forecast.yoyChange >= 0 ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400" : "bg-red-100 dark:bg-red-900/40 text-red-600")}>
-                {forecast.yoyChange >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                {forecast.yoyChange >= 0 ? "+" : ""}{forecast.yoyChange}% จากปีที่แล้ว
-              </div>
-            )}
-          </div>
-          <div className="space-y-1.5">
-            {[
-              { label: "ระยะเก็บเกี่ยว",  val: "พ.ค. – ก.ค." },
-              { label: "ราคาคาดการณ์",    val: "190–240 ฿/กก." },
-              { label: "รายรับคาด",        val: forecast ? `${(forecast.forecastedIncome/1000).toFixed(0)}K ฿` : "—" },
-            ].map(r => (
-              <div key={r.label} className="flex justify-between text-xs">
-                <span className="text-gray-500">{r.label}</span>
-                <span className="font-semibold text-gray-800 dark:text-gray-200">{r.val}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 7. Cost Optimization */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 space-y-3 hover:shadow-md dark:hover:shadow-gray-900/40 transition-all">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center">
-              <DollarSign className="w-4 h-4 text-violet-600 dark:text-violet-400" />
-            </div>
-            <p className="text-sm font-bold text-gray-900 dark:text-white">ลดต้นทุน</p>
-          </div>
-          {expByCategory.length > 0 ? (
-            <div className="space-y-2">
-              {expByCategory.slice(0, 4).map((e, i) => (
-                <div key={e.cat} className="flex items-center gap-2">
-                  <div className="w-1.5 h-5 rounded-full shrink-0" style={{ background: ["#16a34a","#ef4444","#f59e0b","#3b82f6"][i] }} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between text-[11px] mb-0.5">
-                      <span className="text-gray-600 dark:text-gray-400 truncate">{e.cat}</span>
-                      <span className="font-semibold text-gray-800 dark:text-gray-200 shrink-0 ml-1">{(e.amount/1000).toFixed(1)}K</span>
-                    </div>
-                    <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full" style={{ width: `${(e.amount / expByCategory[0]!.amount) * 100}%`, background: ["#16a34a","#ef4444","#f59e0b","#3b82f6"][i] }} />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-xs text-gray-400 py-4 text-center">บันทึกรายจ่ายเพื่อดูการวิเคราะห์</p>
-          )}
-          {totalExpense > 0 && (
-            <div className="bg-green-50 dark:bg-green-950/30 rounded-xl p-2.5 text-center">
-              <p className="text-xs text-green-700 dark:text-green-400 font-semibold">💡 ประหยัดได้เพิ่ม ~{Math.round(totalExpense * 0.15).toLocaleString("th-TH")} บาท</p>
-              <p className="text-[10px] text-gray-400 mt-0.5">ด้วยการปรับสูตรปุ๋ยและระบบน้ำหยด</p>
-            </div>
-          )}
-        </div>
-
-        {/* 8. Profit Prediction */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 hover:shadow-md dark:hover:shadow-gray-900/40 transition-all">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
-              <Target className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-            </div>
-            <p className="text-sm font-bold text-gray-900 dark:text-white">พยากรณ์กำไร</p>
-          </div>
-          {fcLoading ? <Skeleton className="h-32" /> : profitForecast.length > 0 ? (
-            <ResponsiveContainer width="100%" height={130}>
-              <BarChart data={profitForecast} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-                <YAxis tickFormatter={v => `${(v/1000).toFixed(0)}K`} tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-                <Tooltip content={<ChartTip />} />
-                <Bar dataKey="ประมาณ" fill="#6366f1" radius={[4,4,0,0]} maxBarSize={24} opacity={0.8} />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="h-32 flex items-center justify-center">
-              <p className="text-xs text-gray-400">ต้องการข้อมูลรายเดือน</p>
-            </div>
-          )}
-          {forecast && (
-            <div className="mt-2 text-center">
-              <p className="text-xs text-gray-500">ประมาณการรายรับปีนี้</p>
-              <p className="text-lg font-extrabold text-indigo-600 dark:text-indigo-400">{(forecast.forecastedIncome/1000).toFixed(0)}K ฿</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── Recommendations ── */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 hover:shadow-md dark:hover:shadow-gray-900/40 transition-all">
-        <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+      {/* ── Recommendations List ── */}
+      <div className="card-premium p-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+              <Zap className="w-5 h-5 text-gray-700 dark:text-gray-300" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white">คำแนะนำ AI</h3>
-              <p className="text-[11px] text-gray-400">{allRecs.length} รายการ · อัปเดตเมื่อกี้</p>
+              <h2 className="text-[16px] font-bold text-gray-900 dark:text-white">คำแนะนำจาก AI (Action Plan)</h2>
+              <p className="text-[12px] text-gray-400 mt-0.5">สิ่งที่คุณควรทำเพื่อเพิ่มผลกำไรและลดความเสี่ยง</p>
             </div>
           </div>
-          {/* Filter buttons */}
-          <div className="flex flex-wrap gap-1.5">
-            {([["all","ทั้งหมด",null], ["critical","วิกฤต","bg-red-500"], ["high","สำคัญ","bg-orange-500"], ["medium","ปานกลาง","bg-amber-400"], ["low","แนะนำ","bg-green-500"]] as const).map(([key, label, dotClass]) => (
-              <button
-                key={key}
-                onClick={() => setActiveFilter(key as typeof activeFilter)}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border",
-                  activeFilter === key
-                    ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-transparent"
-                    : "bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-100 dark:border-gray-700 hover:border-gray-300"
-                )}
-              >
-                {dotClass && <div className={cn("w-1.5 h-1.5 rounded-full", dotClass)} />}
-                {label}
-                <span className="text-[10px] opacity-60">{recCounts[key as string]}</span>
-              </button>
-            ))}
+          
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-hide">
+            <button
+              onClick={() => setActiveFilter("all")}
+              className={cn("px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors", activeFilter === "all" ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900" : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700")}
+            >
+              ทั้งหมด ({recCounts.all})
+            </button>
+            {(["critical", "high", "medium", "low"] as PLevel[]).map(p => {
+              if (recCounts[p] === 0) return null;
+              return (
+                <button
+                  key={p}
+                  onClick={() => setActiveFilter(p)}
+                  className={cn("px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5", 
+                    activeFilter === p 
+                      ? `${PRIORITY[p].bg} ${PRIORITY[p].text} ring-1 ring-inset ring-current` 
+                      : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  )}
+                >
+                  <span className={cn("w-1.5 h-1.5 rounded-full", activeFilter === p ? PRIORITY[p].dot : "bg-gray-400")} />
+                  {PRIORITY[p].label} ({recCounts[p]})
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        <div className="space-y-2">
-          {filteredRecs.length > 0 ? filteredRecs.map((r, i) => (
-            <RecommendCard key={i} {...r} />
-          )) : (
-            <div className="py-8 text-center">
-              <CheckCircle2 className="w-10 h-10 text-green-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">ไม่มีคำแนะนำในระดับนี้ขณะนี้</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {isLoading ? (
+            [...Array(4)].map((_, i) => <Skeleton key={i} className="h-24 w-full" />)
+          ) : filteredRecs.length === 0 ? (
+            <div className="col-span-1 md:col-span-2 text-center py-10">
+              <p className="text-gray-500">ไม่มีคำแนะนำในระดับความสำคัญนี้</p>
             </div>
+          ) : (
+            filteredRecs.map((rec, i) => (
+              <RecommendCard key={i} {...rec} />
+            ))
           )}
-        </div>
-
-        {/* Legend */}
-        <div className="mt-4 pt-4 border-t border-gray-50 dark:border-gray-800 flex flex-wrap gap-4 text-[11px] text-gray-400">
-          {(Object.entries(PRIORITY) as [PLevel, typeof PRIORITY[PLevel]][]).map(([key, cfg]) => (
-            <div key={key} className="flex items-center gap-1.5">
-              <div className={cn("w-2 h-2 rounded-full", cfg.dot)} />
-              <span>{cfg.icon} {cfg.label}</span>
-            </div>
-          ))}
-          <span className="ml-auto">AI วิเคราะห์จากข้อมูลจริงของฟาร์มคุณ</span>
         </div>
       </div>
     </div>

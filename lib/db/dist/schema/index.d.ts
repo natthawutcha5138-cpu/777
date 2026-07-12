@@ -1,4 +1,10 @@
 export * from "./plots";
 export * from "./transactions";
 export * from "./users";
+export * from "./tasks";
+export * from "./workers";
+export * from "./inventory";
+export * from "./equipment";
+export * from "./notifications";
+export * from "./settings";
 //# sourceMappingURL=index.d.ts.map

@@ -155,7 +155,7 @@ export default function LoginPage({ onLogin, onRegister }: LoginPageProps) {
                     onChange={e => setDisplayName(e.target.value)}
                     placeholder="เช่น นายสมชาย ใจดี"
                     required
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-300 focus:border-green-400 transition-all placeholder:text-gray-400"
+                    className="input-base"
                   />
                 </div>
               )}
@@ -169,7 +169,7 @@ export default function LoginPage({ onLogin, onRegister }: LoginPageProps) {
                   placeholder="ตัวอักษรภาษาอังกฤษ ตัวเลข หรือ _"
                   required
                   autoComplete="username"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-300 focus:border-green-400 transition-all placeholder:text-gray-400"
+                  className="input-base"
                 />
               </div>
 
@@ -182,7 +182,7 @@ export default function LoginPage({ onLogin, onRegister }: LoginPageProps) {
                   placeholder={mode === "register" ? "อย่างน้อย 6 ตัวอักษร" : "รหัสผ่านของคุณ"}
                   required
                   autoComplete={mode === "login" ? "current-password" : "new-password"}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-300 focus:border-green-400 transition-all placeholder:text-gray-400"
+                  className="input-base"
                 />
               </div>
 
@@ -196,11 +196,16 @@ export default function LoginPage({ onLogin, onRegister }: LoginPageProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3.5 rounded-xl transition-all shadow-md shadow-green-200 hover:shadow-lg hover:shadow-green-200 disabled:opacity-60 disabled:cursor-not-allowed text-sm mt-1"
+                className="w-full btn-primary justify-center py-3.5 text-sm mt-2 relative"
               >
-                {loading
-                  ? (mode === "login" ? "กำลังเข้าสู่ระบบ..." : "กำลังสมัครสมาชิก...")
-                  : (mode === "login" ? "เข้าสู่ระบบ" : "สมัครสมาชิก")}
+                {loading ? (
+                  <div className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>{mode === "login" ? "กำลังเข้าสู่ระบบ..." : "กำลังสมัครสมาชิก..."}</span>
+                  </div>
+                ) : (
+                  mode === "login" ? "เข้าสู่ระบบ" : "สมัครสมาชิก"
+                )}
               </button>
             </form>
 

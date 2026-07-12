@@ -280,3 +280,479 @@ export const GetMonthlyTrendResponseItem = zod.object({
 export const GetMonthlyTrendResponse = zod.array(GetMonthlyTrendResponseItem)
 
 
+/**
+ * @summary List tasks
+ */
+export const ListTasksQueryParams = zod.object({
+  "status": zod.enum(['todo', 'in_progress', 'done']).optional()
+})
+
+export const ListTasksResponseItem = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "status": zod.enum(['todo', 'in_progress', 'done']),
+  "priority": zod.enum(['low', 'medium', 'high', 'urgent']),
+  "category": zod.string().nullish(),
+  "plotId": zod.number().nullish(),
+  "workerId": zod.number().nullish(),
+  "dueDate": zod.coerce.date().nullish(),
+  "completedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListTasksResponse = zod.array(ListTasksResponseItem)
+
+
+/**
+ * @summary Create a task
+ */
+export const CreateTaskBody = zod.object({
+  "title": zod.string(),
+  "description": zod.string().optional(),
+  "status": zod.enum(['todo', 'in_progress', 'done']).optional(),
+  "priority": zod.enum(['low', 'medium', 'high', 'urgent']).optional(),
+  "category": zod.string().optional(),
+  "plotId": zod.number().optional(),
+  "workerId": zod.number().optional(),
+  "dueDate": zod.coerce.date().optional()
+})
+
+
+/**
+ * @summary Update a task
+ */
+export const UpdateTaskParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateTaskBody = zod.object({
+  "title": zod.string().optional(),
+  "description": zod.string().optional(),
+  "status": zod.enum(['todo', 'in_progress', 'done']).optional(),
+  "priority": zod.enum(['low', 'medium', 'high', 'urgent']).optional(),
+  "category": zod.string().optional(),
+  "plotId": zod.number().optional(),
+  "workerId": zod.number().optional(),
+  "dueDate": zod.coerce.date().optional()
+})
+
+export const UpdateTaskResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "status": zod.enum(['todo', 'in_progress', 'done']),
+  "priority": zod.enum(['low', 'medium', 'high', 'urgent']),
+  "category": zod.string().nullish(),
+  "plotId": zod.number().nullish(),
+  "workerId": zod.number().nullish(),
+  "dueDate": zod.coerce.date().nullish(),
+  "completedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a task
+ */
+export const DeleteTaskParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Get task counts by status
+ */
+export const GetTaskSummaryResponse = zod.object({
+  "todo": zod.number(),
+  "inProgress": zod.number(),
+  "done": zod.number(),
+  "overdue": zod.number()
+})
+
+
+/**
+ * @summary List workers
+ */
+export const ListWorkersResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "role": zod.string(),
+  "phone": zod.string().nullish(),
+  "status": zod.enum(['active', 'inactive']),
+  "hireDate": zod.coerce.date(),
+  "dailyWage": zod.number(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const ListWorkersResponse = zod.array(ListWorkersResponseItem)
+
+
+/**
+ * @summary Create a worker
+ */
+export const CreateWorkerBody = zod.object({
+  "name": zod.string(),
+  "role": zod.string(),
+  "phone": zod.string().optional(),
+  "status": zod.enum(['active', 'inactive']).optional(),
+  "hireDate": zod.coerce.date(),
+  "dailyWage": zod.number().optional(),
+  "notes": zod.string().optional()
+})
+
+
+/**
+ * @summary Update a worker
+ */
+export const UpdateWorkerParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateWorkerBody = zod.object({
+  "name": zod.string().optional(),
+  "role": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "status": zod.enum(['active', 'inactive']).optional(),
+  "hireDate": zod.coerce.date().optional(),
+  "dailyWage": zod.number().optional(),
+  "notes": zod.string().optional()
+})
+
+export const UpdateWorkerResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "role": zod.string(),
+  "phone": zod.string().nullish(),
+  "status": zod.enum(['active', 'inactive']),
+  "hireDate": zod.coerce.date(),
+  "dailyWage": zod.number(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a worker
+ */
+export const DeleteWorkerParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary List attendance records
+ */
+export const ListAttendanceQueryParams = zod.object({
+  "workerId": zod.coerce.number().optional(),
+  "month": zod.coerce.string().optional()
+})
+
+export const ListAttendanceResponseItem = zod.object({
+  "id": zod.number(),
+  "workerId": zod.number(),
+  "date": zod.coerce.date(),
+  "status": zod.enum(['present', 'absent', 'leave', 'half_day']),
+  "hoursWorked": zod.number().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const ListAttendanceResponse = zod.array(ListAttendanceResponseItem)
+
+
+/**
+ * @summary Record attendance
+ */
+export const CreateAttendanceBody = zod.object({
+  "workerId": zod.number(),
+  "date": zod.coerce.date(),
+  "status": zod.enum(['present', 'absent', 'leave', 'half_day']),
+  "hoursWorked": zod.number().optional(),
+  "notes": zod.string().optional()
+})
+
+
+/**
+ * @summary Delete an attendance record
+ */
+export const DeleteAttendanceParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary List inventory items
+ */
+export const ListInventoryItemsResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "category": zod.string(),
+  "unit": zod.string(),
+  "quantity": zod.number(),
+  "minQuantity": zod.number(),
+  "costPerUnit": zod.number(),
+  "supplier": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListInventoryItemsResponse = zod.array(ListInventoryItemsResponseItem)
+
+
+/**
+ * @summary Create an inventory item
+ */
+export const CreateInventoryItemBody = zod.object({
+  "name": zod.string(),
+  "category": zod.string(),
+  "unit": zod.string(),
+  "quantity": zod.number().optional(),
+  "minQuantity": zod.number().optional(),
+  "costPerUnit": zod.number().optional(),
+  "supplier": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+
+/**
+ * @summary Update an inventory item
+ */
+export const UpdateInventoryItemParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateInventoryItemBody = zod.object({
+  "name": zod.string().optional(),
+  "category": zod.string().optional(),
+  "unit": zod.string().optional(),
+  "quantity": zod.number().optional(),
+  "minQuantity": zod.number().optional(),
+  "costPerUnit": zod.number().optional(),
+  "supplier": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+export const UpdateInventoryItemResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "category": zod.string(),
+  "unit": zod.string(),
+  "quantity": zod.number(),
+  "minQuantity": zod.number(),
+  "costPerUnit": zod.number(),
+  "supplier": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete an inventory item
+ */
+export const DeleteInventoryItemParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Get inventory value and low-stock summary
+ */
+export const GetInventorySummaryResponse = zod.object({
+  "totalItems": zod.number(),
+  "totalValue": zod.number(),
+  "lowStockCount": zod.number(),
+  "lowStockItems": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "category": zod.string(),
+  "unit": zod.string(),
+  "quantity": zod.number(),
+  "minQuantity": zod.number(),
+  "costPerUnit": zod.number(),
+  "supplier": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary List equipment
+ */
+export const ListEquipmentResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "type": zod.string(),
+  "status": zod.enum(['operational', 'maintenance', 'broken', 'retired']),
+  "purchaseDate": zod.coerce.date().nullish(),
+  "lastMaintenanceDate": zod.coerce.date().nullish(),
+  "nextMaintenanceDate": zod.coerce.date().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const ListEquipmentResponse = zod.array(ListEquipmentResponseItem)
+
+
+/**
+ * @summary Create an equipment record
+ */
+export const CreateEquipmentBody = zod.object({
+  "name": zod.string(),
+  "type": zod.string(),
+  "status": zod.enum(['operational', 'maintenance', 'broken', 'retired']).optional(),
+  "purchaseDate": zod.coerce.date().optional(),
+  "lastMaintenanceDate": zod.coerce.date().optional(),
+  "nextMaintenanceDate": zod.coerce.date().optional(),
+  "notes": zod.string().optional()
+})
+
+
+/**
+ * @summary Update an equipment record
+ */
+export const UpdateEquipmentParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateEquipmentBody = zod.object({
+  "name": zod.string().optional(),
+  "type": zod.string().optional(),
+  "status": zod.enum(['operational', 'maintenance', 'broken', 'retired']).optional(),
+  "purchaseDate": zod.coerce.date().optional(),
+  "lastMaintenanceDate": zod.coerce.date().optional(),
+  "nextMaintenanceDate": zod.coerce.date().optional(),
+  "notes": zod.string().optional()
+})
+
+export const UpdateEquipmentResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "type": zod.string(),
+  "status": zod.enum(['operational', 'maintenance', 'broken', 'retired']),
+  "purchaseDate": zod.coerce.date().nullish(),
+  "lastMaintenanceDate": zod.coerce.date().nullish(),
+  "nextMaintenanceDate": zod.coerce.date().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete an equipment record
+ */
+export const DeleteEquipmentParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary List notifications (auto-generates from live farm conditions)
+ */
+export const ListNotificationsResponseItem = zod.object({
+  "id": zod.number(),
+  "type": zod.string(),
+  "title": zod.string(),
+  "body": zod.string(),
+  "severity": zod.enum(['info', 'warning', 'urgent']),
+  "read": zod.boolean(),
+  "relatedPath": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const ListNotificationsResponse = zod.array(ListNotificationsResponseItem)
+
+
+/**
+ * @summary Get unread notification count
+ */
+export const GetUnreadNotificationCountResponse = zod.object({
+  "count": zod.number()
+})
+
+
+/**
+ * @summary Mark a notification as read
+ */
+export const MarkNotificationReadParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const MarkNotificationReadResponse = zod.object({
+  "id": zod.number(),
+  "type": zod.string(),
+  "title": zod.string(),
+  "body": zod.string(),
+  "severity": zod.enum(['info', 'warning', 'urgent']),
+  "read": zod.boolean(),
+  "relatedPath": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Mark all notifications as read
+ */
+export const MarkAllNotificationsReadResponse = zod.object({
+  "count": zod.number()
+})
+
+
+/**
+ * @summary Get organization settings (creates defaults if missing)
+ */
+export const GetOrgSettingsResponse = zod.object({
+  "id": zod.number(),
+  "orgName": zod.string(),
+  "farmName": zod.string(),
+  "language": zod.string(),
+  "timezone": zod.string(),
+  "notifyEmail": zod.boolean(),
+  "notifyPush": zod.boolean(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update organization settings
+ */
+export const UpdateOrgSettingsBody = zod.object({
+  "orgName": zod.string().optional(),
+  "farmName": zod.string().optional(),
+  "language": zod.string().optional(),
+  "timezone": zod.string().optional(),
+  "notifyEmail": zod.boolean().optional(),
+  "notifyPush": zod.boolean().optional()
+})
+
+export const UpdateOrgSettingsResponse = zod.object({
+  "id": zod.number(),
+  "orgName": zod.string(),
+  "farmName": zod.string(),
+  "language": zod.string(),
+  "timezone": zod.string(),
+  "notifyEmail": zod.boolean(),
+  "notifyPush": zod.boolean(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Search across plots, transactions, tasks, workers, inventory, and equipment
+ */
+export const GlobalSearchQueryParams = zod.object({
+  "q": zod.coerce.string()
+})
+
+export const GlobalSearchResponse = zod.object({
+  "results": zod.array(zod.object({
+  "id": zod.number(),
+  "type": zod.enum(['plot', 'transaction', 'task', 'worker', 'inventory', 'equipment']),
+  "title": zod.string(),
+  "subtitle": zod.string(),
+  "path": zod.string()
+}))
+})
+
+

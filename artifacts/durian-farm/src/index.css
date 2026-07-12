@@ -181,10 +181,16 @@
   .num { font-family: 'Inter', monospace; font-feature-settings: "tnum" 1; }
 
   /* ── Page enter ── */
-  .page-enter { animation: pageEnter 0.22s cubic-bezier(0.16,1,0.3,1) both; }
+  .page-enter { animation: pageEnter 0.3s cubic-bezier(0.16,1,0.3,1) both; }
   @keyframes pageEnter {
-    from { opacity: 0; transform: translateY(6px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(10px) scale(0.995); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .slide-in-right { animation: slideInRight 0.3s cubic-bezier(0.16,1,0.3,1) both; }
+  @keyframes slideInRight {
+    from { opacity: 0; transform: translateX(15px); }
+    to   { opacity: 1; transform: translateX(0); }
   }
 
   /* ── Fade up ── */
@@ -246,7 +252,10 @@
 
   /* ── Input style ── */
   .input-base {
-    @apply w-full px-3 py-2.5 text-sm bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-800 dark:text-gray-200 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400/30 focus:border-green-400 dark:focus:border-green-500 transition-all duration-150;
+    @apply w-full px-3 py-2.5 text-sm bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-800 dark:text-gray-200 placeholder:text-gray-400 transition-all duration-150;
+  }
+  .input-base:focus {
+    @apply outline-none ring-2 ring-green-500/30 border-green-500 dark:border-green-500 bg-white dark:bg-gray-900;
   }
 
   /* ── Primary button ── */

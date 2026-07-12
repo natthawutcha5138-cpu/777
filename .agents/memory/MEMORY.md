@@ -1,2 +1,0 @@
-- [DurianFarm Dark Mode](dark-mode.md) — class-based dark mode via ThemeContext; toggle adds .dark to html element
-- [DurianFarm Auth Guard Pattern](auth-guard.md) — dashboard queries gated with enabled flag to avoid 401 before session established

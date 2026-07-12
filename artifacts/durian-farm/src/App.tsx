@@ -11,6 +11,12 @@ import Plots from "@/pages/Plots";
 import Fertilizer from "@/pages/Fertilizer";
 import Forecast from "@/pages/Forecast";
 import AIAnalysis from "@/pages/AIAnalysis";
+import Tasks from "@/pages/Tasks";
+import Workers from "@/pages/Workers";
+import Inventory from "@/pages/Inventory";
+import Equipment from "@/pages/Equipment";
+import NotificationsPage from "@/pages/Notifications";
+import SettingsPage from "@/pages/Settings";
 import NotFound from "@/pages/not-found";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -29,16 +35,16 @@ function AppShell() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-green-600 flex items-center justify-center text-white text-xl animate-pulse">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white text-2xl shadow-lg shadow-green-200 dark:shadow-green-900/20 animate-pulse">
             🌳
           </div>
           <div className="flex gap-1.5">
             {[0,1,2].map(i => (
-              <div key={i} className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+              <div key={i} className="w-2.5 h-2.5 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
             ))}
           </div>
-          <p className="text-sm text-gray-400">กำลังโหลดระบบ...</p>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400 animate-pulse">กำลังโหลดระบบ...</p>
         </div>
       </div>
     );
@@ -56,6 +62,12 @@ function AppShell() {
           <Route path="/fertilizer" component={Fertilizer} />
           <Route path="/forecast"    component={Forecast} />
           <Route path="/ai-analysis" component={AIAnalysis} />
+          <Route path="/tasks"      component={Tasks} />
+          <Route path="/workers"    component={Workers} />
+          <Route path="/inventory"  component={Inventory} />
+          <Route path="/equipment"  component={Equipment} />
+          <Route path="/notifications" component={NotificationsPage} />
+          <Route path="/settings"   component={SettingsPage} />
           <Route component={NotFound} />
         </Switch>
       </Layout>

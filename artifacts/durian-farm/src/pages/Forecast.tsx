@@ -6,25 +6,10 @@ import {
 } from "recharts";
 import { TrendingUp, TrendingDown, BarChart3, Sparkles, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ChartTooltip } from "@/components/charts/ChartTooltip";
 
 const currentYear = new Date().getFullYear();
 const prevYear    = currentYear - 1;
-
-const ChartTip = ({ active, payload, label }: any) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl p-3 text-xs" style={{ boxShadow: "var(--shadow-lg)", border: "1px solid hsl(var(--border))" }}>
-      <p className="font-semibold text-gray-600 dark:text-gray-400 mb-2">{label}</p>
-      {payload.map((p: any) => (
-        <div key={p.name} className="flex items-center gap-2 mb-1 last:mb-0">
-          <div className="w-2 h-2 rounded-full shrink-0" style={{ background: p.color }} />
-          <span className="text-gray-400">{p.name}:</span>
-          <span className="font-semibold text-gray-800 dark:text-gray-200 num">{formatBaht(Number(p.value))}</span>
-        </div>
-      ))}
-    </div>
-  );
-};
 
 export default function Forecast() {
   const { data: forecast, isLoading: fLoading } = useGetForecast({ query: { queryKey: getGetForecastQueryKey() } });
@@ -69,11 +54,11 @@ export default function Forecast() {
 
       {/* ── Forecast Cards ── */}
       {fLoading ? (
-        <div className="grid md:grid-cols-3 gap-4">
-          {[...Array(3)].map((_, i) => <div key={i} className="skeleton h-28" />)}
+        <div className="grid md:grid-cols-3 gap-4 stagger">
+          {[...Array(3)].map((_, i) => <div key={i} className="skeleton h-[120px]" />)}
         </div>
       ) : forecast ? (
-        <>
+        <div className="stagger">
           <div className="grid md:grid-cols-3 gap-4">
             {[
               {
@@ -171,7 +156,7 @@ export default function Forecast() {
               📊 อ้างอิง: แนวโน้มเฉลี่ย 3 ปี · เงินเฟ้อปัจจัยการผลิต {forecast.inputCostInflation}%/ปี · อุปสงค์ตลาดส่งออก
             </p>
           </div>
-        </>
+        </div>
       ) : null}
 
       {/* ── Monthly Trend Chart ── */}
@@ -196,7 +181,7 @@ export default function Forecast() {
               <CartesianGrid strokeDasharray="2 4" stroke="currentColor" className="opacity-[0.04]" />
               <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 10, fill: "#9ca3af" }} tickFormatter={v => (v/1000).toFixed(0) + "K"} axisLine={false} tickLine={false} width={36} />
-              <Tooltip content={<ChartTip />} />
+              <Tooltip content={<ChartTooltip />} />
               <Line type="monotone" dataKey="รายรับ"  stroke="#16a34a" strokeWidth={2} dot={{ r: 2.5, fill: "#16a34a", strokeWidth: 2, stroke: "#fff" }} />
               <Line type="monotone" dataKey="รายจ่าย" stroke="#f87171" strokeWidth={2} dot={{ r: 2.5, fill: "#f87171", strokeWidth: 2, stroke: "#fff" }} />
               <Line type="monotone" dataKey="กำไร"    stroke="#fbbf24" strokeWidth={2} dot={{ r: 2.5, fill: "#fbbf24", strokeWidth: 2, stroke: "#fff" }} strokeDasharray="5 4" />

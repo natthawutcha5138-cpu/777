@@ -1,0 +1,4 @@
+- [DurianFarm Dark Mode](dark-mode.md) — class-based dark mode via ThemeContext; toggle adds .dark to html element
+- [DurianFarm Auth Guard Pattern](auth-guard.md) — dashboard queries gated with enabled flag to avoid 401 before session established
+- [Subagent completion claims](subagent-verification.md) — verify multi-file scaffolding subagent work independently (ls/grep/build/logs) before trusting "done"
+- [Screenshot tool CORS artifacts](screenshot-tool-cors.md) — appPreview screenshots from 127.0.0.1 origin trigger expected 401/500s on CORS-locked apps, not real bugs

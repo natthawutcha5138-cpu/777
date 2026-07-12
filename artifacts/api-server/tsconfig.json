@@ -4,7 +4,6 @@
       "incremental": true,
       "tsBuildInfoFile": ".tsbuildinfo",
       "outDir": "dist",
-      "rootDir": "src",
       "rootDirs": ["src", "../../lib/api-zod/src", "../../lib/db/src"],
       "types": ["node"],
       "esModuleInterop": true,

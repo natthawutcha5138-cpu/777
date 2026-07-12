@@ -206,9 +206,11 @@ export default function WeatherWidget({ compact = false }: { compact?: boolean }
         </div>
 
         {loading ? (
-          <div className="h-10 bg-white/10 rounded-xl animate-pulse" />
+          <div className="h-10 skeleton" />
         ) : error ? (
-          <p className="text-[11px] text-red-400">ดึงข้อมูลไม่ได้</p>
+          <div className="h-10 flex items-center justify-center bg-red-900/40 rounded-xl border border-red-500/20">
+            <p className="text-[11px] text-red-400">{error}</p>
+          </div>
         ) : weather ? (
           <>
             <div className="flex items-end gap-2 mb-2">
@@ -280,14 +282,21 @@ export default function WeatherWidget({ compact = false }: { compact?: boolean }
       )}
 
       {loading ? (
-        <div className="space-y-3">
-          <div className="h-12 bg-gray-100 rounded-2xl animate-pulse" />
+        <div className="space-y-4">
+          <div className="h-14 skeleton" />
           <div className="grid grid-cols-3 gap-3">
-            {[...Array(3)].map((_, i) => <div key={i} className="h-16 bg-gray-100 rounded-2xl animate-pulse" />)}
+            {[...Array(3)].map((_, i) => <div key={i} className="h-[88px] skeleton" />)}
+          </div>
+          <div className="space-y-2 pt-2">
+             <div className="h-4 skeleton w-1/3" />
+             <div className="h-2 skeleton w-full" />
           </div>
         </div>
       ) : error ? (
-        <p className="text-sm text-red-500 py-2">{error}</p>
+        <div className="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-2xl p-4 text-center">
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          <button onClick={handleManualRefresh} className="mt-2 text-xs font-semibold text-red-600 dark:text-red-400 underline focus-ring">ลองอีกครั้ง</button>
+        </div>
       ) : weather && advice ? (
         <div className="space-y-4">
           <div className={`flex items-start gap-3 px-4 py-3 rounded-2xl ${

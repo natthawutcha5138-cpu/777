@@ -1,36 +1,48 @@
-# [Project name]
+# Durian Smart Farm (ระบบบริหารจัดการสวนทุเรียนอัจฉริยะ)
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A Thai-language smart farm management system for durian orchards. Includes a web dashboard, REST API, and Expo mobile app.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- **Start API server** — run the "API Server" workflow (port 5000)
+- **Start web app** — run the "DurianFarm Web" workflow (port 8080, proxies `/api` → port 5000)
+- Both workflows must be running for the full app to work
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
+- **Web**: React + Vite + shadcn/ui + Tailwind CSS (port 8080)
+- **API**: Express 5 (port 5000)
+- **DB**: PostgreSQL + Drizzle ORM (Replit-managed, `DATABASE_URL` injected automatically)
+- **Mobile**: Expo React Native (`artifacts/durian-farm-mobile`)
 - Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
+- API codegen: Orval (from OpenAPI spec in `lib/api-spec/openapi.yaml`)
 - Build: esbuild (CJS bundle)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/durian-farm/` — React web app
+- `artifacts/api-server/` — Express API server
+- `artifacts/durian-farm-mobile/` — Expo mobile app
+- `lib/db/src/schema/` — Drizzle DB schema (source of truth)
+- `lib/api-spec/openapi.yaml` — OpenAPI spec (source of truth for API contracts)
+- `lib/api-client-react/` — generated React Query hooks (do not edit manually)
+- `lib/api-zod/` — generated Zod schemas (do not edit manually)
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- API calls from the web app use relative `/api/...` paths; Vite dev server proxies them to the API server on port 5000 (`API_PORT` env var, defaults to 5000)
+- `DATABASE_URL` and other `PG*` vars are runtime-managed by Replit — do not set them manually
+- `SESSION_SECRET` is stored as a Replit Secret
+- The dev command for the API server does a full esbuild compile before starting (by design — no watch mode)
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+A management dashboard for durian farm owners (ภาษาไทย). Features: accounting (income/expense), plot management, fertilizer scheduling, AI analysis, weather forecast, task tracking, workers, inventory, equipment, and notifications.
 
 ## User preferences
 
@@ -38,7 +50,9 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- The API Server workflow doesn't use `waitForPort` (the build step + port check caused timeouts). The server IS running if you see "Server listening port: 5000" in its logs.
+- Run `pnpm --filter @workspace/db run push` any time the Drizzle schema changes.
+- Do not regenerate `lib/api-client-react/` or `lib/api-zod/` by hand — run the codegen script.
 
 ## Pointers
 

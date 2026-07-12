@@ -174,6 +174,391 @@ export interface ForecastResult {
   currentSeasonStage?: string;
 }
 
+export type TaskStatus = typeof TaskStatus[keyof typeof TaskStatus];
+
+
+export const TaskStatus = {
+  todo: 'todo',
+  in_progress: 'in_progress',
+  done: 'done',
+} as const;
+
+export type TaskPriority = typeof TaskPriority[keyof typeof TaskPriority];
+
+
+export const TaskPriority = {
+  low: 'low',
+  medium: 'medium',
+  high: 'high',
+  urgent: 'urgent',
+} as const;
+
+export interface Task {
+  id: number;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  status: TaskStatus;
+  priority: TaskPriority;
+  /** @nullable */
+  category?: string | null;
+  /** @nullable */
+  plotId?: number | null;
+  /** @nullable */
+  workerId?: number | null;
+  /** @nullable */
+  dueDate?: string | null;
+  /** @nullable */
+  completedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type TaskInputStatus = typeof TaskInputStatus[keyof typeof TaskInputStatus];
+
+
+export const TaskInputStatus = {
+  todo: 'todo',
+  in_progress: 'in_progress',
+  done: 'done',
+} as const;
+
+export type TaskInputPriority = typeof TaskInputPriority[keyof typeof TaskInputPriority];
+
+
+export const TaskInputPriority = {
+  low: 'low',
+  medium: 'medium',
+  high: 'high',
+  urgent: 'urgent',
+} as const;
+
+export interface TaskInput {
+  title: string;
+  description?: string;
+  status?: TaskInputStatus;
+  priority?: TaskInputPriority;
+  category?: string;
+  plotId?: number;
+  workerId?: number;
+  dueDate?: string;
+}
+
+export type TaskUpdateStatus = typeof TaskUpdateStatus[keyof typeof TaskUpdateStatus];
+
+
+export const TaskUpdateStatus = {
+  todo: 'todo',
+  in_progress: 'in_progress',
+  done: 'done',
+} as const;
+
+export type TaskUpdatePriority = typeof TaskUpdatePriority[keyof typeof TaskUpdatePriority];
+
+
+export const TaskUpdatePriority = {
+  low: 'low',
+  medium: 'medium',
+  high: 'high',
+  urgent: 'urgent',
+} as const;
+
+export interface TaskUpdate {
+  title?: string;
+  description?: string;
+  status?: TaskUpdateStatus;
+  priority?: TaskUpdatePriority;
+  category?: string;
+  plotId?: number;
+  workerId?: number;
+  dueDate?: string;
+}
+
+export interface TaskSummary {
+  todo: number;
+  inProgress: number;
+  done: number;
+  overdue: number;
+}
+
+export type WorkerStatus = typeof WorkerStatus[keyof typeof WorkerStatus];
+
+
+export const WorkerStatus = {
+  active: 'active',
+  inactive: 'inactive',
+} as const;
+
+export interface Worker {
+  id: number;
+  name: string;
+  role: string;
+  /** @nullable */
+  phone?: string | null;
+  status: WorkerStatus;
+  hireDate: string;
+  dailyWage: number;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+}
+
+export type WorkerInputStatus = typeof WorkerInputStatus[keyof typeof WorkerInputStatus];
+
+
+export const WorkerInputStatus = {
+  active: 'active',
+  inactive: 'inactive',
+} as const;
+
+export interface WorkerInput {
+  name: string;
+  role: string;
+  phone?: string;
+  status?: WorkerInputStatus;
+  hireDate: string;
+  dailyWage?: number;
+  notes?: string;
+}
+
+export type WorkerUpdateStatus = typeof WorkerUpdateStatus[keyof typeof WorkerUpdateStatus];
+
+
+export const WorkerUpdateStatus = {
+  active: 'active',
+  inactive: 'inactive',
+} as const;
+
+export interface WorkerUpdate {
+  name?: string;
+  role?: string;
+  phone?: string;
+  status?: WorkerUpdateStatus;
+  hireDate?: string;
+  dailyWage?: number;
+  notes?: string;
+}
+
+export type AttendanceStatus = typeof AttendanceStatus[keyof typeof AttendanceStatus];
+
+
+export const AttendanceStatus = {
+  present: 'present',
+  absent: 'absent',
+  leave: 'leave',
+  half_day: 'half_day',
+} as const;
+
+export interface Attendance {
+  id: number;
+  workerId: number;
+  date: string;
+  status: AttendanceStatus;
+  /** @nullable */
+  hoursWorked?: number | null;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+}
+
+export type AttendanceInputStatus = typeof AttendanceInputStatus[keyof typeof AttendanceInputStatus];
+
+
+export const AttendanceInputStatus = {
+  present: 'present',
+  absent: 'absent',
+  leave: 'leave',
+  half_day: 'half_day',
+} as const;
+
+export interface AttendanceInput {
+  workerId: number;
+  date: string;
+  status: AttendanceInputStatus;
+  hoursWorked?: number;
+  notes?: string;
+}
+
+export interface InventoryItem {
+  id: number;
+  name: string;
+  category: string;
+  unit: string;
+  quantity: number;
+  minQuantity: number;
+  costPerUnit: number;
+  /** @nullable */
+  supplier?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InventoryItemInput {
+  name: string;
+  category: string;
+  unit: string;
+  quantity?: number;
+  minQuantity?: number;
+  costPerUnit?: number;
+  supplier?: string;
+  notes?: string;
+}
+
+export interface InventoryItemUpdate {
+  name?: string;
+  category?: string;
+  unit?: string;
+  quantity?: number;
+  minQuantity?: number;
+  costPerUnit?: number;
+  supplier?: string;
+  notes?: string;
+}
+
+export interface InventorySummary {
+  totalItems: number;
+  totalValue: number;
+  lowStockCount: number;
+  lowStockItems: InventoryItem[];
+}
+
+export type EquipmentStatus = typeof EquipmentStatus[keyof typeof EquipmentStatus];
+
+
+export const EquipmentStatus = {
+  operational: 'operational',
+  maintenance: 'maintenance',
+  broken: 'broken',
+  retired: 'retired',
+} as const;
+
+export interface Equipment {
+  id: number;
+  name: string;
+  type: string;
+  status: EquipmentStatus;
+  /** @nullable */
+  purchaseDate?: string | null;
+  /** @nullable */
+  lastMaintenanceDate?: string | null;
+  /** @nullable */
+  nextMaintenanceDate?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+}
+
+export type EquipmentInputStatus = typeof EquipmentInputStatus[keyof typeof EquipmentInputStatus];
+
+
+export const EquipmentInputStatus = {
+  operational: 'operational',
+  maintenance: 'maintenance',
+  broken: 'broken',
+  retired: 'retired',
+} as const;
+
+export interface EquipmentInput {
+  name: string;
+  type: string;
+  status?: EquipmentInputStatus;
+  purchaseDate?: string;
+  lastMaintenanceDate?: string;
+  nextMaintenanceDate?: string;
+  notes?: string;
+}
+
+export type EquipmentUpdateStatus = typeof EquipmentUpdateStatus[keyof typeof EquipmentUpdateStatus];
+
+
+export const EquipmentUpdateStatus = {
+  operational: 'operational',
+  maintenance: 'maintenance',
+  broken: 'broken',
+  retired: 'retired',
+} as const;
+
+export interface EquipmentUpdate {
+  name?: string;
+  type?: string;
+  status?: EquipmentUpdateStatus;
+  purchaseDate?: string;
+  lastMaintenanceDate?: string;
+  nextMaintenanceDate?: string;
+  notes?: string;
+}
+
+export type NotificationSeverity = typeof NotificationSeverity[keyof typeof NotificationSeverity];
+
+
+export const NotificationSeverity = {
+  info: 'info',
+  warning: 'warning',
+  urgent: 'urgent',
+} as const;
+
+export interface Notification {
+  id: number;
+  type: string;
+  title: string;
+  body: string;
+  severity: NotificationSeverity;
+  read: boolean;
+  /** @nullable */
+  relatedPath?: string | null;
+  createdAt: string;
+}
+
+export interface UnreadCount {
+  count: number;
+}
+
+export interface OrgSettings {
+  id: number;
+  orgName: string;
+  farmName: string;
+  language: string;
+  timezone: string;
+  notifyEmail: boolean;
+  notifyPush: boolean;
+  updatedAt: string;
+}
+
+export interface OrgSettingsUpdate {
+  orgName?: string;
+  farmName?: string;
+  language?: string;
+  timezone?: string;
+  notifyEmail?: boolean;
+  notifyPush?: boolean;
+}
+
+export type SearchResultItemType = typeof SearchResultItemType[keyof typeof SearchResultItemType];
+
+
+export const SearchResultItemType = {
+  plot: 'plot',
+  transaction: 'transaction',
+  task: 'task',
+  worker: 'worker',
+  inventory: 'inventory',
+  equipment: 'equipment',
+} as const;
+
+export interface SearchResultItem {
+  id: number;
+  type: SearchResultItemType;
+  title: string;
+  subtitle: string;
+  path: string;
+}
+
+export interface SearchResults {
+  results: SearchResultItem[];
+}
+
 export type ListTransactionsParams = {
 type?: ListTransactionsType;
 period?: ListTransactionsPeriod;
@@ -204,5 +589,30 @@ year?: number;
 
 export type GetMonthlyTrendParams = {
 year?: number;
+};
+
+export type ListTasksParams = {
+status?: ListTasksStatus;
+};
+
+export type ListTasksStatus = typeof ListTasksStatus[keyof typeof ListTasksStatus];
+
+
+export const ListTasksStatus = {
+  todo: 'todo',
+  in_progress: 'in_progress',
+  done: 'done',
+} as const;
+
+export type ListAttendanceParams = {
+workerId?: number;
+/**
+ * YYYY-MM
+ */
+month?: string;
+};
+
+export type GlobalSearchParams = {
+q: string;
 };
 

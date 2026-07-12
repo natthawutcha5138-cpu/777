@@ -694,4 +694,1185 @@ export declare const GetMonthlyTrendResponse: zod.ZodArray<zod.ZodObject<{
     month: number;
     netProfit: number;
 }>, "many">;
+/**
+ * @summary List tasks
+ */
+export declare const ListTasksQueryParams: zod.ZodObject<{
+    status: zod.ZodOptional<zod.ZodEnum<["todo", "in_progress", "done"]>>;
+}, "strip", zod.ZodTypeAny, {
+    status?: "todo" | "in_progress" | "done" | undefined;
+}, {
+    status?: "todo" | "in_progress" | "done" | undefined;
+}>;
+export declare const ListTasksResponseItem: zod.ZodObject<{
+    id: zod.ZodNumber;
+    title: zod.ZodString;
+    description: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    status: zod.ZodEnum<["todo", "in_progress", "done"]>;
+    priority: zod.ZodEnum<["low", "medium", "high", "urgent"]>;
+    category: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    plotId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+    workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+    dueDate: zod.ZodOptional<zod.ZodNullable<zod.ZodDate>>;
+    completedAt: zod.ZodOptional<zod.ZodNullable<zod.ZodDate>>;
+    createdAt: zod.ZodDate;
+    updatedAt: zod.ZodDate;
+}, "strip", zod.ZodTypeAny, {
+    status: "todo" | "in_progress" | "done";
+    id: number;
+    createdAt: Date;
+    title: string;
+    priority: "low" | "medium" | "high" | "urgent";
+    updatedAt: Date;
+    category?: string | null | undefined;
+    plotId?: number | null | undefined;
+    description?: string | null | undefined;
+    workerId?: number | null | undefined;
+    dueDate?: Date | null | undefined;
+    completedAt?: Date | null | undefined;
+}, {
+    status: "todo" | "in_progress" | "done";
+    id: number;
+    createdAt: Date;
+    title: string;
+    priority: "low" | "medium" | "high" | "urgent";
+    updatedAt: Date;
+    category?: string | null | undefined;
+    plotId?: number | null | undefined;
+    description?: string | null | undefined;
+    workerId?: number | null | undefined;
+    dueDate?: Date | null | undefined;
+    completedAt?: Date | null | undefined;
+}>;
+export declare const ListTasksResponse: zod.ZodArray<zod.ZodObject<{
+    id: zod.ZodNumber;
+    title: zod.ZodString;
+    description: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    status: zod.ZodEnum<["todo", "in_progress", "done"]>;
+    priority: zod.ZodEnum<["low", "medium", "high", "urgent"]>;
+    category: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    plotId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+    workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+    dueDate: zod.ZodOptional<zod.ZodNullable<zod.ZodDate>>;
+    completedAt: zod.ZodOptional<zod.ZodNullable<zod.ZodDate>>;
+    createdAt: zod.ZodDate;
+    updatedAt: zod.ZodDate;
+}, "strip", zod.ZodTypeAny, {
+    status: "todo" | "in_progress" | "done";
+    id: number;
+    createdAt: Date;
+    title: string;
+    priority: "low" | "medium" | "high" | "urgent";
+    updatedAt: Date;
+    category?: string | null | undefined;
+    plotId?: number | null | undefined;
+    description?: string | null | undefined;
+    workerId?: number | null | undefined;
+    dueDate?: Date | null | undefined;
+    completedAt?: Date | null | undefined;
+}, {
+    status: "todo" | "in_progress" | "done";
+    id: number;
+    createdAt: Date;
+    title: string;
+    priority: "low" | "medium" | "high" | "urgent";
+    updatedAt: Date;
+    category?: string | null | undefined;
+    plotId?: number | null | undefined;
+    description?: string | null | undefined;
+    workerId?: number | null | undefined;
+    dueDate?: Date | null | undefined;
+    completedAt?: Date | null | undefined;
+}>, "many">;
+/**
+ * @summary Create a task
+ */
+export declare const CreateTaskBody: zod.ZodObject<{
+    title: zod.ZodString;
+    description: zod.ZodOptional<zod.ZodString>;
+    status: zod.ZodOptional<zod.ZodEnum<["todo", "in_progress", "done"]>>;
+    priority: zod.ZodOptional<zod.ZodEnum<["low", "medium", "high", "urgent"]>>;
+    category: zod.ZodOptional<zod.ZodString>;
+    plotId: zod.ZodOptional<zod.ZodNumber>;
+    workerId: zod.ZodOptional<zod.ZodNumber>;
+    dueDate: zod.ZodOptional<zod.ZodDate>;
+}, "strip", zod.ZodTypeAny, {
+    title: string;
+    status?: "todo" | "in_progress" | "done" | undefined;
+    category?: string | undefined;
+    plotId?: number | undefined;
+    description?: string | undefined;
+    priority?: "low" | "medium" | "high" | "urgent" | undefined;
+    workerId?: number | undefined;
+    dueDate?: Date | undefined;
+}, {
+    title: string;
+    status?: "todo" | "in_progress" | "done" | undefined;
+    category?: string | undefined;
+    plotId?: number | undefined;
+    description?: string | undefined;
+    priority?: "low" | "medium" | "high" | "urgent" | undefined;
+    workerId?: number | undefined;
+    dueDate?: Date | undefined;
+}>;
+/**
+ * @summary Update a task
+ */
+export declare const UpdateTaskParams: zod.ZodObject<{
+    id: zod.ZodNumber;
+}, "strip", zod.ZodTypeAny, {
+    id: number;
+}, {
+    id: number;
+}>;
+export declare const UpdateTaskBody: zod.ZodObject<{
+    title: zod.ZodOptional<zod.ZodString>;
+    description: zod.ZodOptional<zod.ZodString>;
+    status: zod.ZodOptional<zod.ZodEnum<["todo", "in_progress", "done"]>>;
+    priority: zod.ZodOptional<zod.ZodEnum<["low", "medium", "high", "urgent"]>>;
+    category: zod.ZodOptional<zod.ZodString>;
+    plotId: zod.ZodOptional<zod.ZodNumber>;
+    workerId: zod.ZodOptional<zod.ZodNumber>;
+    dueDate: zod.ZodOptional<zod.ZodDate>;
+}, "strip", zod.ZodTypeAny, {
+    status?: "todo" | "in_progress" | "done" | undefined;
+    category?: string | undefined;
+    plotId?: number | undefined;
+    title?: string | undefined;
+    description?: string | undefined;
+    priority?: "low" | "medium" | "high" | "urgent" | undefined;
+    workerId?: number | undefined;
+    dueDate?: Date | undefined;
+}, {
+    status?: "todo" | "in_progress" | "done" | undefined;
+    category?: string | undefined;
+    plotId?: number | undefined;
+    title?: string | undefined;
+    description?: string | undefined;
+    priority?: "low" | "medium" | "high" | "urgent" | undefined;
+    workerId?: number | undefined;
+    dueDate?: Date | undefined;
+}>;
+export declare const UpdateTaskResponse: zod.ZodObject<{
+    id: zod.ZodNumber;
+    title: zod.ZodString;
+    description: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    status: zod.ZodEnum<["todo", "in_progress", "done"]>;
+    priority: zod.ZodEnum<["low", "medium", "high", "urgent"]>;
+    category: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    plotId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+    workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+    dueDate: zod.ZodOptional<zod.ZodNullable<zod.ZodDate>>;
+    completedAt: zod.ZodOptional<zod.ZodNullable<zod.ZodDate>>;
+    createdAt: zod.ZodDate;
+    updatedAt: zod.ZodDate;
+}, "strip", zod.ZodTypeAny, {
+    status: "todo" | "in_progress" | "done";
+    id: number;
+    createdAt: Date;
+    title: string;
+    priority: "low" | "medium" | "high" | "urgent";
+    updatedAt: Date;
+    category?: string | null | undefined;
+    plotId?: number | null | undefined;
+    description?: string | null | undefined;
+    workerId?: number | null | undefined;
+    dueDate?: Date | null | undefined;
+    completedAt?: Date | null | undefined;
+}, {
+    status: "todo" | "in_progress" | "done";
+    id: number;
+    createdAt: Date;
+    title: string;
+    priority: "low" | "medium" | "high" | "urgent";
+    updatedAt: Date;
+    category?: string | null | undefined;
+    plotId?: number | null | undefined;
+    description?: string | null | undefined;
+    workerId?: number | null | undefined;
+    dueDate?: Date | null | undefined;
+    completedAt?: Date | null | undefined;
+}>;
+/**
+ * @summary Delete a task
+ */
+export declare const DeleteTaskParams: zod.ZodObject<{
+    id: zod.ZodNumber;
+}, "strip", zod.ZodTypeAny, {
+    id: number;
+}, {
+    id: number;
+}>;
+/**
+ * @summary Get task counts by status
+ */
+export declare const GetTaskSummaryResponse: zod.ZodObject<{
+    todo: zod.ZodNumber;
+    inProgress: zod.ZodNumber;
+    done: zod.ZodNumber;
+    overdue: zod.ZodNumber;
+}, "strip", zod.ZodTypeAny, {
+    todo: number;
+    done: number;
+    inProgress: number;
+    overdue: number;
+}, {
+    todo: number;
+    done: number;
+    inProgress: number;
+    overdue: number;
+}>;
+/**
+ * @summary List workers
+ */
+export declare const ListWorkersResponseItem: zod.ZodObject<{
+    id: zod.ZodNumber;
+    name: zod.ZodString;
+    role: zod.ZodString;
+    phone: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    status: zod.ZodEnum<["active", "inactive"]>;
+    hireDate: zod.ZodDate;
+    dailyWage: zod.ZodNumber;
+    notes: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    createdAt: zod.ZodDate;
+}, "strip", zod.ZodTypeAny, {
+    status: "active" | "inactive";
+    id: number;
+    name: string;
+    createdAt: Date;
+    role: string;
+    hireDate: Date;
+    dailyWage: number;
+    notes?: string | null | undefined;
+    phone?: string | null | undefined;
+}, {
+    status: "active" | "inactive";
+    id: number;
+    name: string;
+    createdAt: Date;
+    role: string;
+    hireDate: Date;
+    dailyWage: number;
+    notes?: string | null | undefined;
+    phone?: string | null | undefined;
+}>;
+export declare const ListWorkersResponse: zod.ZodArray<zod.ZodObject<{
+    id: zod.ZodNumber;
+    name: zod.ZodString;
+    role: zod.ZodString;
+    phone: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    status: zod.ZodEnum<["active", "inactive"]>;
+    hireDate: zod.ZodDate;
+    dailyWage: zod.ZodNumber;
+    notes: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    createdAt: zod.ZodDate;
+}, "strip", zod.ZodTypeAny, {
+    status: "active" | "inactive";
+    id: number;
+    name: string;
+    createdAt: Date;
+    role: string;
+    hireDate: Date;
+    dailyWage: number;
+    notes?: string | null | undefined;
+    phone?: string | null | undefined;
+}, {
+    status: "active" | "inactive";
+    id: number;
+    name: string;
+    createdAt: Date;
+    role: string;
+    hireDate: Date;
+    dailyWage: number;
+    notes?: string | null | undefined;
+    phone?: string | null | undefined;
+}>, "many">;
+/**
+ * @summary Create a worker
+ */
+export declare const CreateWorkerBody: zod.ZodObject<{
+    name: zod.ZodString;
+    role: zod.ZodString;
+    phone: zod.ZodOptional<zod.ZodString>;
+    status: zod.ZodOptional<zod.ZodEnum<["active", "inactive"]>>;
+    hireDate: zod.ZodDate;
+    dailyWage: zod.ZodOptional<zod.ZodNumber>;
+    notes: zod.ZodOptional<zod.ZodString>;
+}, "strip", zod.ZodTypeAny, {
+    name: string;
+    role: string;
+    hireDate: Date;
+    status?: "active" | "inactive" | undefined;
+    notes?: string | undefined;
+    phone?: string | undefined;
+    dailyWage?: number | undefined;
+}, {
+    name: string;
+    role: string;
+    hireDate: Date;
+    status?: "active" | "inactive" | undefined;
+    notes?: string | undefined;
+    phone?: string | undefined;
+    dailyWage?: number | undefined;
+}>;
+/**
+ * @summary Update a worker
+ */
+export declare const UpdateWorkerParams: zod.ZodObject<{
+    id: zod.ZodNumber;
+}, "strip", zod.ZodTypeAny, {
+    id: number;
+}, {
+    id: number;
+}>;
+export declare const UpdateWorkerBody: zod.ZodObject<{
+    name: zod.ZodOptional<zod.ZodString>;
+    role: zod.ZodOptional<zod.ZodString>;
+    phone: zod.ZodOptional<zod.ZodString>;
+    status: zod.ZodOptional<zod.ZodEnum<["active", "inactive"]>>;
+    hireDate: zod.ZodOptional<zod.ZodDate>;
+    dailyWage: zod.ZodOptional<zod.ZodNumber>;
+    notes: zod.ZodOptional<zod.ZodString>;
+}, "strip", zod.ZodTypeAny, {
+    status?: "active" | "inactive" | undefined;
+    name?: string | undefined;
+    notes?: string | undefined;
+    role?: string | undefined;
+    phone?: string | undefined;
+    hireDate?: Date | undefined;
+    dailyWage?: number | undefined;
+}, {
+    status?: "active" | "inactive" | undefined;
+    name?: string | undefined;
+    notes?: string | undefined;
+    role?: string | undefined;
+    phone?: string | undefined;
+    hireDate?: Date | undefined;
+    dailyWage?: number | undefined;
+}>;
+export declare const UpdateWorkerResponse: zod.ZodObject<{
+    id: zod.ZodNumber;
+    name: zod.ZodString;
+    role: zod.ZodString;
+    phone: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    status: zod.ZodEnum<["active", "inactive"]>;
+    hireDate: zod.ZodDate;
+    dailyWage: zod.ZodNumber;
+    notes: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    createdAt: zod.ZodDate;
+}, "strip", zod.ZodTypeAny, {
+    status: "active" | "inactive";
+    id: number;
+    name: string;
+    createdAt: Date;
+    role: string;
+    hireDate: Date;
+    dailyWage: number;
+    notes?: string | null | undefined;
+    phone?: string | null | undefined;
+}, {
+    status: "active" | "inactive";
+    id: number;
+    name: string;
+    createdAt: Date;
+    role: string;
+    hireDate: Date;
+    dailyWage: number;
+    notes?: string | null | undefined;
+    phone?: string | null | undefined;
+}>;
+/**
+ * @summary Delete a worker
+ */
+export declare const DeleteWorkerParams: zod.ZodObject<{
+    id: zod.ZodNumber;
+}, "strip", zod.ZodTypeAny, {
+    id: number;
+}, {
+    id: number;
+}>;
+/**
+ * @summary List attendance records
+ */
+export declare const ListAttendanceQueryParams: zod.ZodObject<{
+    workerId: zod.ZodOptional<zod.ZodNumber>;
+    month: zod.ZodOptional<zod.ZodString>;
+}, "strip", zod.ZodTypeAny, {
+    month?: string | undefined;
+    workerId?: number | undefined;
+}, {
+    month?: string | undefined;
+    workerId?: number | undefined;
+}>;
+export declare const ListAttendanceResponseItem: zod.ZodObject<{
+    id: zod.ZodNumber;
+    workerId: zod.ZodNumber;
+    date: zod.ZodDate;
+    status: zod.ZodEnum<["present", "absent", "leave", "half_day"]>;
+    hoursWorked: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+    notes: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    createdAt: zod.ZodDate;
+}, "strip", zod.ZodTypeAny, {
+    status: "present" | "absent" | "leave" | "half_day";
+    id: number;
+    createdAt: Date;
+    date: Date;
+    workerId: number;
+    notes?: string | null | undefined;
+    hoursWorked?: number | null | undefined;
+}, {
+    status: "present" | "absent" | "leave" | "half_day";
+    id: number;
+    createdAt: Date;
+    date: Date;
+    workerId: number;
+    notes?: string | null | undefined;
+    hoursWorked?: number | null | undefined;
+}>;
+export declare const ListAttendanceResponse: zod.ZodArray<zod.ZodObject<{
+    id: zod.ZodNumber;
+    workerId: zod.ZodNumber;
+    date: zod.ZodDate;
+    status: zod.ZodEnum<["present", "absent", "leave", "half_day"]>;
+    hoursWorked: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+    notes: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    createdAt: zod.ZodDate;
+}, "strip", zod.ZodTypeAny, {
+    status: "present" | "absent" | "leave" | "half_day";
+    id: number;
+    createdAt: Date;
+    date: Date;
+    workerId: number;
+    notes?: string | null | undefined;
+    hoursWorked?: number | null | undefined;
+}, {
+    status: "present" | "absent" | "leave" | "half_day";
+    id: number;
+    createdAt: Date;
+    date: Date;
+    workerId: number;
+    notes?: string | null | undefined;
+    hoursWorked?: number | null | undefined;
+}>, "many">;
+/**
+ * @summary Record attendance
+ */
+export declare const CreateAttendanceBody: zod.ZodObject<{
+    workerId: zod.ZodNumber;
+    date: zod.ZodDate;
+    status: zod.ZodEnum<["present", "absent", "leave", "half_day"]>;
+    hoursWorked: zod.ZodOptional<zod.ZodNumber>;
+    notes: zod.ZodOptional<zod.ZodString>;
+}, "strip", zod.ZodTypeAny, {
+    status: "present" | "absent" | "leave" | "half_day";
+    date: Date;
+    workerId: number;
+    notes?: string | undefined;
+    hoursWorked?: number | undefined;
+}, {
+    status: "present" | "absent" | "leave" | "half_day";
+    date: Date;
+    workerId: number;
+    notes?: string | undefined;
+    hoursWorked?: number | undefined;
+}>;
+/**
+ * @summary Delete an attendance record
+ */
+export declare const DeleteAttendanceParams: zod.ZodObject<{
+    id: zod.ZodNumber;
+}, "strip", zod.ZodTypeAny, {
+    id: number;
+}, {
+    id: number;
+}>;
+/**
+ * @summary List inventory items
+ */
+export declare const ListInventoryItemsResponseItem: zod.ZodObject<{
+    id: zod.ZodNumber;
+    name: zod.ZodString;
+    category: zod.ZodString;
+    unit: zod.ZodString;
+    quantity: zod.ZodNumber;
+    minQuantity: zod.ZodNumber;
+    costPerUnit: zod.ZodNumber;
+    supplier: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    notes: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    createdAt: zod.ZodDate;
+    updatedAt: zod.ZodDate;
+}, "strip", zod.ZodTypeAny, {
+    id: number;
+    name: string;
+    createdAt: Date;
+    category: string;
+    unit: string;
+    updatedAt: Date;
+    quantity: number;
+    minQuantity: number;
+    costPerUnit: number;
+    notes?: string | null | undefined;
+    supplier?: string | null | undefined;
+}, {
+    id: number;
+    name: string;
+    createdAt: Date;
+    category: string;
+    unit: string;
+    updatedAt: Date;
+    quantity: number;
+    minQuantity: number;
+    costPerUnit: number;
+    notes?: string | null | undefined;
+    supplier?: string | null | undefined;
+}>;
+export declare const ListInventoryItemsResponse: zod.ZodArray<zod.ZodObject<{
+    id: zod.ZodNumber;
+    name: zod.ZodString;
+    category: zod.ZodString;
+    unit: zod.ZodString;
+    quantity: zod.ZodNumber;
+    minQuantity: zod.ZodNumber;
+    costPerUnit: zod.ZodNumber;
+    supplier: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    notes: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    createdAt: zod.ZodDate;
+    updatedAt: zod.ZodDate;
+}, "strip", zod.ZodTypeAny, {
+    id: number;
+    name: string;
+    createdAt: Date;
+    category: string;
+    unit: string;
+    updatedAt: Date;
+    quantity: number;
+    minQuantity: number;
+    costPerUnit: number;
+    notes?: string | null | undefined;
+    supplier?: string | null | undefined;
+}, {
+    id: number;
+    name: string;
+    createdAt: Date;
+    category: string;
+    unit: string;
+    updatedAt: Date;
+    quantity: number;
+    minQuantity: number;
+    costPerUnit: number;
+    notes?: string | null | undefined;
+    supplier?: string | null | undefined;
+}>, "many">;
+/**
+ * @summary Create an inventory item
+ */
+export declare const CreateInventoryItemBody: zod.ZodObject<{
+    name: zod.ZodString;
+    category: zod.ZodString;
+    unit: zod.ZodString;
+    quantity: zod.ZodOptional<zod.ZodNumber>;
+    minQuantity: zod.ZodOptional<zod.ZodNumber>;
+    costPerUnit: zod.ZodOptional<zod.ZodNumber>;
+    supplier: zod.ZodOptional<zod.ZodString>;
+    notes: zod.ZodOptional<zod.ZodString>;
+}, "strip", zod.ZodTypeAny, {
+    name: string;
+    category: string;
+    unit: string;
+    notes?: string | undefined;
+    quantity?: number | undefined;
+    minQuantity?: number | undefined;
+    costPerUnit?: number | undefined;
+    supplier?: string | undefined;
+}, {
+    name: string;
+    category: string;
+    unit: string;
+    notes?: string | undefined;
+    quantity?: number | undefined;
+    minQuantity?: number | undefined;
+    costPerUnit?: number | undefined;
+    supplier?: string | undefined;
+}>;
+/**
+ * @summary Update an inventory item
+ */
+export declare const UpdateInventoryItemParams: zod.ZodObject<{
+    id: zod.ZodNumber;
+}, "strip", zod.ZodTypeAny, {
+    id: number;
+}, {
+    id: number;
+}>;
+export declare const UpdateInventoryItemBody: zod.ZodObject<{
+    name: zod.ZodOptional<zod.ZodString>;
+    category: zod.ZodOptional<zod.ZodString>;
+    unit: zod.ZodOptional<zod.ZodString>;
+    quantity: zod.ZodOptional<zod.ZodNumber>;
+    minQuantity: zod.ZodOptional<zod.ZodNumber>;
+    costPerUnit: zod.ZodOptional<zod.ZodNumber>;
+    supplier: zod.ZodOptional<zod.ZodString>;
+    notes: zod.ZodOptional<zod.ZodString>;
+}, "strip", zod.ZodTypeAny, {
+    name?: string | undefined;
+    notes?: string | undefined;
+    category?: string | undefined;
+    unit?: string | undefined;
+    quantity?: number | undefined;
+    minQuantity?: number | undefined;
+    costPerUnit?: number | undefined;
+    supplier?: string | undefined;
+}, {
+    name?: string | undefined;
+    notes?: string | undefined;
+    category?: string | undefined;
+    unit?: string | undefined;
+    quantity?: number | undefined;
+    minQuantity?: number | undefined;
+    costPerUnit?: number | undefined;
+    supplier?: string | undefined;
+}>;
+export declare const UpdateInventoryItemResponse: zod.ZodObject<{
+    id: zod.ZodNumber;
+    name: zod.ZodString;
+    category: zod.ZodString;
+    unit: zod.ZodString;
+    quantity: zod.ZodNumber;
+    minQuantity: zod.ZodNumber;
+    costPerUnit: zod.ZodNumber;
+    supplier: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    notes: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    createdAt: zod.ZodDate;
+    updatedAt: zod.ZodDate;
+}, "strip", zod.ZodTypeAny, {
+    id: number;
+    name: string;
+    createdAt: Date;
+    category: string;
+    unit: string;
+    updatedAt: Date;
+    quantity: number;
+    minQuantity: number;
+    costPerUnit: number;
+    notes?: string | null | undefined;
+    supplier?: string | null | undefined;
+}, {
+    id: number;
+    name: string;
+    createdAt: Date;
+    category: string;
+    unit: string;
+    updatedAt: Date;
+    quantity: number;
+    minQuantity: number;
+    costPerUnit: number;
+    notes?: string | null | undefined;
+    supplier?: string | null | undefined;
+}>;
+/**
+ * @summary Delete an inventory item
+ */
+export declare const DeleteInventoryItemParams: zod.ZodObject<{
+    id: zod.ZodNumber;
+}, "strip", zod.ZodTypeAny, {
+    id: number;
+}, {
+    id: number;
+}>;
+/**
+ * @summary Get inventory value and low-stock summary
+ */
+export declare const GetInventorySummaryResponse: zod.ZodObject<{
+    totalItems: zod.ZodNumber;
+    totalValue: zod.ZodNumber;
+    lowStockCount: zod.ZodNumber;
+    lowStockItems: zod.ZodArray<zod.ZodObject<{
+        id: zod.ZodNumber;
+        name: zod.ZodString;
+        category: zod.ZodString;
+        unit: zod.ZodString;
+        quantity: zod.ZodNumber;
+        minQuantity: zod.ZodNumber;
+        costPerUnit: zod.ZodNumber;
+        supplier: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+        notes: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+        createdAt: zod.ZodDate;
+        updatedAt: zod.ZodDate;
+    }, "strip", zod.ZodTypeAny, {
+        id: number;
+        name: string;
+        createdAt: Date;
+        category: string;
+        unit: string;
+        updatedAt: Date;
+        quantity: number;
+        minQuantity: number;
+        costPerUnit: number;
+        notes?: string | null | undefined;
+        supplier?: string | null | undefined;
+    }, {
+        id: number;
+        name: string;
+        createdAt: Date;
+        category: string;
+        unit: string;
+        updatedAt: Date;
+        quantity: number;
+        minQuantity: number;
+        costPerUnit: number;
+        notes?: string | null | undefined;
+        supplier?: string | null | undefined;
+    }>, "many">;
+}, "strip", zod.ZodTypeAny, {
+    totalItems: number;
+    totalValue: number;
+    lowStockCount: number;
+    lowStockItems: {
+        id: number;
+        name: string;
+        createdAt: Date;
+        category: string;
+        unit: string;
+        updatedAt: Date;
+        quantity: number;
+        minQuantity: number;
+        costPerUnit: number;
+        notes?: string | null | undefined;
+        supplier?: string | null | undefined;
+    }[];
+}, {
+    totalItems: number;
+    totalValue: number;
+    lowStockCount: number;
+    lowStockItems: {
+        id: number;
+        name: string;
+        createdAt: Date;
+        category: string;
+        unit: string;
+        updatedAt: Date;
+        quantity: number;
+        minQuantity: number;
+        costPerUnit: number;
+        notes?: string | null | undefined;
+        supplier?: string | null | undefined;
+    }[];
+}>;
+/**
+ * @summary List equipment
+ */
+export declare const ListEquipmentResponseItem: zod.ZodObject<{
+    id: zod.ZodNumber;
+    name: zod.ZodString;
+    type: zod.ZodString;
+    status: zod.ZodEnum<["operational", "maintenance", "broken", "retired"]>;
+    purchaseDate: zod.ZodOptional<zod.ZodNullable<zod.ZodDate>>;
+    lastMaintenanceDate: zod.ZodOptional<zod.ZodNullable<zod.ZodDate>>;
+    nextMaintenanceDate: zod.ZodOptional<zod.ZodNullable<zod.ZodDate>>;
+    notes: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    createdAt: zod.ZodDate;
+}, "strip", zod.ZodTypeAny, {
+    status: "operational" | "maintenance" | "broken" | "retired";
+    type: string;
+    id: number;
+    name: string;
+    createdAt: Date;
+    notes?: string | null | undefined;
+    purchaseDate?: Date | null | undefined;
+    lastMaintenanceDate?: Date | null | undefined;
+    nextMaintenanceDate?: Date | null | undefined;
+}, {
+    status: "operational" | "maintenance" | "broken" | "retired";
+    type: string;
+    id: number;
+    name: string;
+    createdAt: Date;
+    notes?: string | null | undefined;
+    purchaseDate?: Date | null | undefined;
+    lastMaintenanceDate?: Date | null | undefined;
+    nextMaintenanceDate?: Date | null | undefined;
+}>;
+export declare const ListEquipmentResponse: zod.ZodArray<zod.ZodObject<{
+    id: zod.ZodNumber;
+    name: zod.ZodString;
+    type: zod.ZodString;
+    status: zod.ZodEnum<["operational", "maintenance", "broken", "retired"]>;
+    purchaseDate: zod.ZodOptional<zod.ZodNullable<zod.ZodDate>>;
+    lastMaintenanceDate: zod.ZodOptional<zod.ZodNullable<zod.ZodDate>>;
+    nextMaintenanceDate: zod.ZodOptional<zod.ZodNullable<zod.ZodDate>>;
+    notes: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    createdAt: zod.ZodDate;
+}, "strip", zod.ZodTypeAny, {
+    status: "operational" | "maintenance" | "broken" | "retired";
+    type: string;
+    id: number;
+    name: string;
+    createdAt: Date;
+    notes?: string | null | undefined;
+    purchaseDate?: Date | null | undefined;
+    lastMaintenanceDate?: Date | null | undefined;
+    nextMaintenanceDate?: Date | null | undefined;
+}, {
+    status: "operational" | "maintenance" | "broken" | "retired";
+    type: string;
+    id: number;
+    name: string;
+    createdAt: Date;
+    notes?: string | null | undefined;
+    purchaseDate?: Date | null | undefined;
+    lastMaintenanceDate?: Date | null | undefined;
+    nextMaintenanceDate?: Date | null | undefined;
+}>, "many">;
+/**
+ * @summary Create an equipment record
+ */
+export declare const CreateEquipmentBody: zod.ZodObject<{
+    name: zod.ZodString;
+    type: zod.ZodString;
+    status: zod.ZodOptional<zod.ZodEnum<["operational", "maintenance", "broken", "retired"]>>;
+    purchaseDate: zod.ZodOptional<zod.ZodDate>;
+    lastMaintenanceDate: zod.ZodOptional<zod.ZodDate>;
+    nextMaintenanceDate: zod.ZodOptional<zod.ZodDate>;
+    notes: zod.ZodOptional<zod.ZodString>;
+}, "strip", zod.ZodTypeAny, {
+    type: string;
+    name: string;
+    status?: "operational" | "maintenance" | "broken" | "retired" | undefined;
+    notes?: string | undefined;
+    purchaseDate?: Date | undefined;
+    lastMaintenanceDate?: Date | undefined;
+    nextMaintenanceDate?: Date | undefined;
+}, {
+    type: string;
+    name: string;
+    status?: "operational" | "maintenance" | "broken" | "retired" | undefined;
+    notes?: string | undefined;
+    purchaseDate?: Date | undefined;
+    lastMaintenanceDate?: Date | undefined;
+    nextMaintenanceDate?: Date | undefined;
+}>;
+/**
+ * @summary Update an equipment record
+ */
+export declare const UpdateEquipmentParams: zod.ZodObject<{
+    id: zod.ZodNumber;
+}, "strip", zod.ZodTypeAny, {
+    id: number;
+}, {
+    id: number;
+}>;
+export declare const UpdateEquipmentBody: zod.ZodObject<{
+    name: zod.ZodOptional<zod.ZodString>;
+    type: zod.ZodOptional<zod.ZodString>;
+    status: zod.ZodOptional<zod.ZodEnum<["operational", "maintenance", "broken", "retired"]>>;
+    purchaseDate: zod.ZodOptional<zod.ZodDate>;
+    lastMaintenanceDate: zod.ZodOptional<zod.ZodDate>;
+    nextMaintenanceDate: zod.ZodOptional<zod.ZodDate>;
+    notes: zod.ZodOptional<zod.ZodString>;
+}, "strip", zod.ZodTypeAny, {
+    status?: "operational" | "maintenance" | "broken" | "retired" | undefined;
+    type?: string | undefined;
+    name?: string | undefined;
+    notes?: string | undefined;
+    purchaseDate?: Date | undefined;
+    lastMaintenanceDate?: Date | undefined;
+    nextMaintenanceDate?: Date | undefined;
+}, {
+    status?: "operational" | "maintenance" | "broken" | "retired" | undefined;
+    type?: string | undefined;
+    name?: string | undefined;
+    notes?: string | undefined;
+    purchaseDate?: Date | undefined;
+    lastMaintenanceDate?: Date | undefined;
+    nextMaintenanceDate?: Date | undefined;
+}>;
+export declare const UpdateEquipmentResponse: zod.ZodObject<{
+    id: zod.ZodNumber;
+    name: zod.ZodString;
+    type: zod.ZodString;
+    status: zod.ZodEnum<["operational", "maintenance", "broken", "retired"]>;
+    purchaseDate: zod.ZodOptional<zod.ZodNullable<zod.ZodDate>>;
+    lastMaintenanceDate: zod.ZodOptional<zod.ZodNullable<zod.ZodDate>>;
+    nextMaintenanceDate: zod.ZodOptional<zod.ZodNullable<zod.ZodDate>>;
+    notes: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    createdAt: zod.ZodDate;
+}, "strip", zod.ZodTypeAny, {
+    status: "operational" | "maintenance" | "broken" | "retired";
+    type: string;
+    id: number;
+    name: string;
+    createdAt: Date;
+    notes?: string | null | undefined;
+    purchaseDate?: Date | null | undefined;
+    lastMaintenanceDate?: Date | null | undefined;
+    nextMaintenanceDate?: Date | null | undefined;
+}, {
+    status: "operational" | "maintenance" | "broken" | "retired";
+    type: string;
+    id: number;
+    name: string;
+    createdAt: Date;
+    notes?: string | null | undefined;
+    purchaseDate?: Date | null | undefined;
+    lastMaintenanceDate?: Date | null | undefined;
+    nextMaintenanceDate?: Date | null | undefined;
+}>;
+/**
+ * @summary Delete an equipment record
+ */
+export declare const DeleteEquipmentParams: zod.ZodObject<{
+    id: zod.ZodNumber;
+}, "strip", zod.ZodTypeAny, {
+    id: number;
+}, {
+    id: number;
+}>;
+/**
+ * @summary List notifications (auto-generates from live farm conditions)
+ */
+export declare const ListNotificationsResponseItem: zod.ZodObject<{
+    id: zod.ZodNumber;
+    type: zod.ZodString;
+    title: zod.ZodString;
+    body: zod.ZodString;
+    severity: zod.ZodEnum<["info", "warning", "urgent"]>;
+    read: zod.ZodBoolean;
+    relatedPath: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    createdAt: zod.ZodDate;
+}, "strip", zod.ZodTypeAny, {
+    type: string;
+    id: number;
+    createdAt: Date;
+    title: string;
+    body: string;
+    severity: "urgent" | "info" | "warning";
+    read: boolean;
+    relatedPath?: string | null | undefined;
+}, {
+    type: string;
+    id: number;
+    createdAt: Date;
+    title: string;
+    body: string;
+    severity: "urgent" | "info" | "warning";
+    read: boolean;
+    relatedPath?: string | null | undefined;
+}>;
+export declare const ListNotificationsResponse: zod.ZodArray<zod.ZodObject<{
+    id: zod.ZodNumber;
+    type: zod.ZodString;
+    title: zod.ZodString;
+    body: zod.ZodString;
+    severity: zod.ZodEnum<["info", "warning", "urgent"]>;
+    read: zod.ZodBoolean;
+    relatedPath: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    createdAt: zod.ZodDate;
+}, "strip", zod.ZodTypeAny, {
+    type: string;
+    id: number;
+    createdAt: Date;
+    title: string;
+    body: string;
+    severity: "urgent" | "info" | "warning";
+    read: boolean;
+    relatedPath?: string | null | undefined;
+}, {
+    type: string;
+    id: number;
+    createdAt: Date;
+    title: string;
+    body: string;
+    severity: "urgent" | "info" | "warning";
+    read: boolean;
+    relatedPath?: string | null | undefined;
+}>, "many">;
+/**
+ * @summary Get unread notification count
+ */
+export declare const GetUnreadNotificationCountResponse: zod.ZodObject<{
+    count: zod.ZodNumber;
+}, "strip", zod.ZodTypeAny, {
+    count: number;
+}, {
+    count: number;
+}>;
+/**
+ * @summary Mark a notification as read
+ */
+export declare const MarkNotificationReadParams: zod.ZodObject<{
+    id: zod.ZodNumber;
+}, "strip", zod.ZodTypeAny, {
+    id: number;
+}, {
+    id: number;
+}>;
+export declare const MarkNotificationReadResponse: zod.ZodObject<{
+    id: zod.ZodNumber;
+    type: zod.ZodString;
+    title: zod.ZodString;
+    body: zod.ZodString;
+    severity: zod.ZodEnum<["info", "warning", "urgent"]>;
+    read: zod.ZodBoolean;
+    relatedPath: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
+    createdAt: zod.ZodDate;
+}, "strip", zod.ZodTypeAny, {
+    type: string;
+    id: number;
+    createdAt: Date;
+    title: string;
+    body: string;
+    severity: "urgent" | "info" | "warning";
+    read: boolean;
+    relatedPath?: string | null | undefined;
+}, {
+    type: string;
+    id: number;
+    createdAt: Date;
+    title: string;
+    body: string;
+    severity: "urgent" | "info" | "warning";
+    read: boolean;
+    relatedPath?: string | null | undefined;
+}>;
+/**
+ * @summary Mark all notifications as read
+ */
+export declare const MarkAllNotificationsReadResponse: zod.ZodObject<{
+    count: zod.ZodNumber;
+}, "strip", zod.ZodTypeAny, {
+    count: number;
+}, {
+    count: number;
+}>;
+/**
+ * @summary Get organization settings (creates defaults if missing)
+ */
+export declare const GetOrgSettingsResponse: zod.ZodObject<{
+    id: zod.ZodNumber;
+    orgName: zod.ZodString;
+    farmName: zod.ZodString;
+    language: zod.ZodString;
+    timezone: zod.ZodString;
+    notifyEmail: zod.ZodBoolean;
+    notifyPush: zod.ZodBoolean;
+    updatedAt: zod.ZodDate;
+}, "strip", zod.ZodTypeAny, {
+    id: number;
+    updatedAt: Date;
+    orgName: string;
+    farmName: string;
+    language: string;
+    timezone: string;
+    notifyEmail: boolean;
+    notifyPush: boolean;
+}, {
+    id: number;
+    updatedAt: Date;
+    orgName: string;
+    farmName: string;
+    language: string;
+    timezone: string;
+    notifyEmail: boolean;
+    notifyPush: boolean;
+}>;
+/**
+ * @summary Update organization settings
+ */
+export declare const UpdateOrgSettingsBody: zod.ZodObject<{
+    orgName: zod.ZodOptional<zod.ZodString>;
+    farmName: zod.ZodOptional<zod.ZodString>;
+    language: zod.ZodOptional<zod.ZodString>;
+    timezone: zod.ZodOptional<zod.ZodString>;
+    notifyEmail: zod.ZodOptional<zod.ZodBoolean>;
+    notifyPush: zod.ZodOptional<zod.ZodBoolean>;
+}, "strip", zod.ZodTypeAny, {
+    orgName?: string | undefined;
+    farmName?: string | undefined;
+    language?: string | undefined;
+    timezone?: string | undefined;
+    notifyEmail?: boolean | undefined;
+    notifyPush?: boolean | undefined;
+}, {
+    orgName?: string | undefined;
+    farmName?: string | undefined;
+    language?: string | undefined;
+    timezone?: string | undefined;
+    notifyEmail?: boolean | undefined;
+    notifyPush?: boolean | undefined;
+}>;
+export declare const UpdateOrgSettingsResponse: zod.ZodObject<{
+    id: zod.ZodNumber;
+    orgName: zod.ZodString;
+    farmName: zod.ZodString;
+    language: zod.ZodString;
+    timezone: zod.ZodString;
+    notifyEmail: zod.ZodBoolean;
+    notifyPush: zod.ZodBoolean;
+    updatedAt: zod.ZodDate;
+}, "strip", zod.ZodTypeAny, {
+    id: number;
+    updatedAt: Date;
+    orgName: string;
+    farmName: string;
+    language: string;
+    timezone: string;
+    notifyEmail: boolean;
+    notifyPush: boolean;
+}, {
+    id: number;
+    updatedAt: Date;
+    orgName: string;
+    farmName: string;
+    language: string;
+    timezone: string;
+    notifyEmail: boolean;
+    notifyPush: boolean;
+}>;
+/**
+ * @summary Search across plots, transactions, tasks, workers, inventory, and equipment
+ */
+export declare const GlobalSearchQueryParams: zod.ZodObject<{
+    q: zod.ZodString;
+}, "strip", zod.ZodTypeAny, {
+    q: string;
+}, {
+    q: string;
+}>;
+export declare const GlobalSearchResponse: zod.ZodObject<{
+    results: zod.ZodArray<zod.ZodObject<{
+        id: zod.ZodNumber;
+        type: zod.ZodEnum<["plot", "transaction", "task", "worker", "inventory", "equipment"]>;
+        title: zod.ZodString;
+        subtitle: zod.ZodString;
+        path: zod.ZodString;
+    }, "strip", zod.ZodTypeAny, {
+        path: string;
+        type: "plot" | "transaction" | "task" | "worker" | "inventory" | "equipment";
+        id: number;
+        title: string;
+        subtitle: string;
+    }, {
+        path: string;
+        type: "plot" | "transaction" | "task" | "worker" | "inventory" | "equipment";
+        id: number;
+        title: string;
+        subtitle: string;
+    }>, "many">;
+}, "strip", zod.ZodTypeAny, {
+    results: {
+        path: string;
+        type: "plot" | "transaction" | "task" | "worker" | "inventory" | "equipment";
+        id: number;
+        title: string;
+        subtitle: string;
+    }[];
+}, {
+    results: {
+        path: string;
+        type: "plot" | "transaction" | "task" | "worker" | "inventory" | "equipment";
+        id: number;
+        title: string;
+        subtitle: string;
+    }[];
+}>;
 //# sourceMappingURL=api.d.ts.map
