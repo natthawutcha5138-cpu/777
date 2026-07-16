@@ -18,7 +18,7 @@ A Thai-language smart farm management system for durian orchards. Includes a web
 - pnpm workspaces, Node.js 24, TypeScript 5.9
 - **Web**: React + Vite + shadcn/ui + Tailwind CSS (port 24275)
 - **API**: Express 5 (port 8080)
-- **DB**: PostgreSQL + Drizzle ORM (Replit-managed, `DATABASE_URL` injected automatically)
+- **DB**: PostgreSQL + Drizzle ORM (Supabase-managed, `SUPABASE_DATABASE_URL` for runtime, `SUPABASE_DIRECT_URL` for migrations)
 - **Mobile**: Expo React Native (`artifacts/durian-farm-mobile`)
 - Validation: Zod (`zod/v4`), `drizzle-zod`
 - API codegen: Orval (from OpenAPI spec in `lib/api-spec/openapi.yaml`)
