@@ -52,8 +52,6 @@ externalPort = 3001
 
 [userenv.shared]
 BASE_PATH = "/"
-SUPABASE_DATABASE_URL = "postgresql://postgres.sussixrkiqksksdsdwhl:Nicky_28pp@aws-1-ap-south-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
-SUPABASE_DIRECT_URL = "postgresql://postgres.sussixrkiqksksdsdwhl:Nicky_28pp@aws-1-ap-south-1.pooler.supabase.com:5432/postgres"
 
 [nix]
 channel = "stable-25_05"

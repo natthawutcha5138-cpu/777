@@ -1,3 +1,0 @@
-{
-  "buildCommand": "cd artifacts/api-server && pnpm build"
-}

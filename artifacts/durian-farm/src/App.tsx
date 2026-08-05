@@ -1,5 +1,5 @@
 import { Switch, Route, Router as WouterRouter } from "wouter";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -17,6 +17,7 @@ import Inventory from "@/pages/Inventory";
 import Equipment from "@/pages/Equipment";
 import NotificationsPage from "@/pages/Notifications";
 import SettingsPage from "@/pages/Settings";
+import LoginPage from "@/pages/LoginPage";
 import NotFound from "@/pages/not-found";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -30,7 +31,26 @@ const queryClient = new QueryClient({
 });
 
 function AppShell() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, login, register, logout } = useAuth();
+  const qc = useQueryClient();
+
+  // Clear all cached queries on login/logout so data from previous user is gone
+  const handleLogin = async (username: string, password: string) => {
+    const err = await login(username, password);
+    if (!err) qc.clear();
+    return err;
+  };
+
+  const handleRegister = async (username: string, password: string, displayName: string) => {
+    const err = await register(username, password, displayName);
+    if (!err) qc.clear();
+    return err;
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    qc.clear();
+  };
 
   if (loading) {
     return (
@@ -50,11 +70,13 @@ function AppShell() {
     );
   }
 
-  const resolvedUser = user ?? { id: 0, username: "guest", displayName: "เจ้าของสวน" };
+  if (!user) {
+    return <LoginPage onLogin={handleLogin} onRegister={handleRegister} />;
+  }
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout }}>
-      <Layout user={resolvedUser} onLogout={logout}>
+    <AuthContext.Provider value={{ user, loading, logout: handleLogout }}>
+      <Layout user={user} onLogout={handleLogout}>
         <Switch>
           <Route path="/"           component={Dashboard} />
           <Route path="/accounting" component={Accounting} />
