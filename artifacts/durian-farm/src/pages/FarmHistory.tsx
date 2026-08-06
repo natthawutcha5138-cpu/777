@@ -8,6 +8,10 @@ import {
   getListPlotsQueryKey,
 } from "@workspace/api-client-react";
 import {
+  useYearlySummaries,
+  useRadarMetrics,
+} from "@/services/farmHistoryService";
+import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -203,6 +207,11 @@ export default function FarmHistory() {
   );
   const { data: plots = [], isLoading: plotsLoading } = useListPlots({ query: { queryKey: getListPlotsQueryKey() } });
 
+  // ── New: real Supabase data via farmHistoryService ──
+  const { data: yearlySummaries = [], isLoading: yearlyLoading } = useYearlySummaries(AVAILABLE_YEARS);
+  const { data: radarMetricsData, isLoading: radarLoading } = useRadarMetrics(selectedYear);
+  const { data: prevRadarData } = useRadarMetrics(compareYear);
+
   // ── Derived data ──
   const totalTrees  = useMemo(() => plots.reduce((s, p) => s + p.treeCount, 0), [plots]);
   const totalAreaRai = useMemo(() => plots.reduce((s, p) => s + p.areRai, 0), [plots]);
@@ -240,25 +249,30 @@ export default function FarmHistory() {
     })).filter(d => d.value > 0);
   }, [summary]);
 
-  // Radar chart — derive from summary + trend
+  // Radar chart — use REAL data from farmHistoryService (tasks, attendance, inventory + finance)
   const radarData = useMemo(() => {
-    const totalInc  = summary?.totalIncome  ?? 0;
-    const totalExp  = summary?.totalExpense ?? 0;
-    const roi       = summary?.roi          ?? 0;
-    const prevInc   = prevSummary?.totalIncome  ?? 0;
-    const prevExp   = prevSummary?.totalExpense ?? 0;
-    const prevRoi   = prevSummary?.roi          ?? 0;
-    const maxInc    = Math.max(totalInc, prevInc, 1);
-    const maxExp    = Math.max(totalExp, prevExp, 1);
-    return [
-      { metric: "ผลผลิต",             curr: Math.round((totalInc / maxInc) * 100),  prev: Math.round((prevInc / maxInc) * 100) },
-      { metric: "คุณภาพผลผลิต",       curr: Math.min(100, Math.round(roi * 1.5)), prev: Math.min(100, Math.round(prevRoi * 1.5)) },
-      { metric: "ต้นทุนการผลิต",       curr: Math.round(100 - (totalExp / maxExp) * 80), prev: Math.round(100 - (prevExp / maxExp) * 80) },
-      { metric: "ประสิทธิภาพปุ๋ย",     curr: summary ? Math.min(100, Math.round(roi * 1.2)) : 0, prev: prevSummary ? Math.min(100, Math.round(prevRoi * 1.2)) : 0 },
-      { metric: "ประสิทธิภาพยา",       curr: summary ? Math.min(100, Math.round(roi * 1.1)) : 0, prev: prevSummary ? Math.min(100, Math.round(prevRoi * 1.1)) : 0 },
-      { metric: "กำไรสุทธิ",           curr: Math.round(Math.max(0, Math.min(100, roi))), prev: Math.round(Math.max(0, Math.min(100, prevRoi))) },
+    const currMetrics = radarMetricsData?.metrics ?? [];
+    const prevMetrics = prevRadarData?.metrics    ?? [];
+
+    // Build a lookup by metric name for quick access
+    const currMap = Object.fromEntries(currMetrics.map(m => [m.metric, m.value]));
+    const prevMap = Object.fromEntries(prevMetrics.map(m => [m.metric, m.value]));
+
+    const METRIC_KEYS = [
+      "ผลผลิต",
+      "คุณภาพผลผลิต",
+      "ต้นทุนการผลิต",
+      "ประสิทธิภาพงาน",
+      "ประสิทธิภาพแรงงาน",
+      "สุขภาพคลังสินค้า",
     ];
-  }, [summary, prevSummary]);
+
+    return METRIC_KEYS.map(metric => ({
+      metric,
+      curr: currMap[metric] ?? 0,
+      prev: prevMap[metric] ?? 0,
+    }));
+  }, [radarMetricsData, prevRadarData]);
 
   // Heatmap — monthly profit intensity
   const heatData = useMemo(() => {
@@ -309,20 +323,20 @@ export default function FarmHistory() {
   // Gauge score (0–100 derived from ROI)
   const farmScore = Math.min(100, Math.max(0, Math.round((summary?.roi ?? 0) * 1.5 + 50)));
 
-  // Table rows: use per-year summaries from available years
+  // Table rows: use real multi-year summaries from Supabase (all AVAILABLE_YEARS)
   const tableRows: YearSummary[] = useMemo(() => {
-    if (!summary) return [];
-    return [{
-      year:          selectedYear,
-      totalIncome:   summary.totalIncome,
-      totalExpense:  summary.totalExpense,
-      netProfit:     summary.netProfit,
-      roi:           summary.roi,
-      totalPlots:    summary.totalPlots,
-      totalTrees:    summary.totalTrees,
-      totalAreaRai:  summary.totalAreaRai,
-    }];
-  }, [summary, selectedYear]);
+    if (!yearlySummaries.length) return [];
+    return yearlySummaries.map(s => ({
+      year:         s.year,
+      totalIncome:  s.totalIncome,
+      totalExpense: s.totalExpense,
+      netProfit:    s.netProfit,
+      roi:          s.roi,
+      totalPlots:   s.totalPlots,
+      totalTrees:   s.totalTrees,
+      totalAreaRai: s.totalAreaRai,
+    })).sort((a, b) => b.year - a.year); // newest first
+  }, [yearlySummaries]);
 
   const filteredRows = tableRows.filter(r =>
     !tableSearch || String(r.year).includes(tableSearch)
@@ -560,8 +574,10 @@ export default function FarmHistory() {
             subtitle={`เปรียบเทียบ ${selectedYear} กับ ${compareYear}`}
           />
           <div className="p-5">
-            {!summary && !sumLoading ? (
-              <EmptyState icon={Target} title="ยังไม่มีข้อมูลปีนี้" sub="เพิ่มข้อมูลรายรับ-รายจ่ายเพื่อดูกราฟ" />
+            {radarLoading ? (
+              <LoadingPulse rows={5} />
+            ) : !radarMetricsData ? (
+              <EmptyState icon={Target} title="ยังไม่มีข้อมูลปีนี้" sub="เพิ่มข้อมูลรายรับ-รายจ่าย งาน และแรงงานก่อน" />
             ) : (
               <ResponsiveContainer width="100%" height={300}>
                 <RadarChart data={radarData} margin={{ top: 10, right: 20, bottom: 10, left: 20 }}>
@@ -982,10 +998,10 @@ export default function FarmHistory() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 dark:divide-white/[0.03]">
-              {sumLoading ? (
+              {yearlyLoading ? (
                 <tr>
                   <td colSpan={8} className="px-4 py-8">
-                    <LoadingPulse rows={3} />
+                    <LoadingPulse rows={4} />
                   </td>
                 </tr>
               ) : !filteredRows.length ? (
@@ -1029,7 +1045,7 @@ export default function FarmHistory() {
         </div>
         <div className="px-6 py-3 border-t border-gray-100 dark:border-white/[0.06] flex items-center justify-between text-[10px] text-gray-400">
           <span>{filteredRows.length} รายการ</span>
-          <span>แสดงข้อมูลปีที่เลือก: {selectedYear}</span>
+          <span>ข้อมูลจาก Supabase · ปี {AVAILABLE_YEARS[0]}–{AVAILABLE_YEARS[AVAILABLE_YEARS.length - 1]}</span>
         </div>
       </SectionCard>
 

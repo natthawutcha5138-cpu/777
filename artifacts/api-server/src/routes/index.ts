@@ -13,6 +13,7 @@ import equipmentRouter from "./equipment";
 import notificationsRouter from "./notifications";
 import settingsRouter from "./settings";
 import searchRouter from "./search";
+import farmHistoryRouter from "./farmHistory";
 
 const router: IRouter = Router();
 
@@ -29,5 +30,6 @@ router.use(equipmentRouter);
 router.use(notificationsRouter);
 router.use(settingsRouter);
 router.use(searchRouter);
+router.use(farmHistoryRouter);
 
 export default router;
