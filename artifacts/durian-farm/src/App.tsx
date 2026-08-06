@@ -17,6 +17,7 @@ import Inventory from "@/pages/Inventory";
 import Equipment from "@/pages/Equipment";
 import NotificationsPage from "@/pages/Notifications";
 import SettingsPage from "@/pages/Settings";
+import FarmHistory from "@/pages/FarmHistory";
 import LoginPage from "@/pages/LoginPage";
 import NotFound from "@/pages/not-found";
 import { useAuth } from "@/hooks/useAuth";
@@ -90,6 +91,7 @@ function AppShell() {
           <Route path="/equipment"  component={Equipment} />
           <Route path="/notifications" component={NotificationsPage} />
           <Route path="/settings"   component={SettingsPage} />
+          <Route path="/farm-history" component={FarmHistory} />
           <Route component={NotFound} />
         </Switch>
       </Layout>

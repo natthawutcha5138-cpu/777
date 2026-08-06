@@ -8,12 +8,27 @@ import { useToast } from "@/hooks/use-toast";
 
 type FertilizerItem = { name: string; unit: string; quantityPerRai: number; totalQuantity: number; estimatedCostPerUnit: number; totalCost: number; };
 
-const STAGE_ICONS = ["🌿", "🌸", "🍈", "🧺"];
+const STAGE_ICONS = ["🌿", "🌸", "🍈", "🧺", "🍃"];
 const STAGE_COLORS = [
-  { active: "border-green-500 bg-green-50 dark:bg-green-950/30",  dot: "bg-green-500",  text: "text-green-700 dark:text-green-400"  },
-  { active: "border-blue-500 bg-blue-50 dark:bg-blue-950/30",     dot: "bg-blue-500",   text: "text-blue-700 dark:text-blue-400"    },
-  { active: "border-violet-500 bg-violet-50 dark:bg-violet-950/30",dot: "bg-violet-500",text: "text-violet-700 dark:text-violet-400" },
-  { active: "border-amber-500 bg-amber-50 dark:bg-amber-950/30",  dot: "bg-amber-500",  text: "text-amber-700 dark:text-amber-400"  },
+  { active: "border-green-500 bg-green-50 dark:bg-green-950/30",   dot: "bg-green-500",   text: "text-green-700 dark:text-green-400"   },
+  { active: "border-blue-500 bg-blue-50 dark:bg-blue-950/30",      dot: "bg-blue-500",    text: "text-blue-700 dark:text-blue-400"     },
+  { active: "border-violet-500 bg-violet-50 dark:bg-violet-950/30", dot: "bg-violet-500", text: "text-violet-700 dark:text-violet-400" },
+  { active: "border-amber-500 bg-amber-50 dark:bg-amber-950/30",   dot: "bg-amber-500",   text: "text-amber-700 dark:text-amber-400"   },
+  { active: "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 shadow-emerald-500/20", dot: "bg-emerald-500", text: "text-emerald-700 dark:text-emerald-400" },
+];
+
+const STAGE_TOOLTIPS = [
+  [],
+  [],
+  [],
+  [],
+  [
+    "ส่งเสริมการแตกใบอ่อน",
+    "ฟื้นฟูต้นหลังเก็บเกี่ยว",
+    "สร้างใบคุณภาพ",
+    "สะสมอาหารสำหรับฤดูกาลถัดไป",
+    "เตรียมต้นสำหรับการออกดอกในปีถัดไป",
+  ],
 ];
 
 function ItemTable({ items, title, icon }: { items: FertilizerItem[]; title: string; icon: React.ReactNode }) {
@@ -161,31 +176,56 @@ export default function Fertilizer() {
         {/* Stage selector */}
         <div className="mb-8 border-t border-gray-100 dark:border-gray-800/60 pt-6">
           <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-4">ระบุช่วงการเจริญเติบโตปัจจุบัน</label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
             {STAGE_NAMES.map((name, i) => {
               const sc = STAGE_COLORS[i]!;
               const active = stage === i + 1;
+              const tooltips = STAGE_TOOLTIPS[i] ?? [];
+              const isStage5 = i === 4;
               return (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setStage(i + 1)}
-                  className={cn(
-                    "text-left px-4 py-4 rounded-xl text-sm transition-all duration-200 border-2 relative overflow-hidden group focus-ring",
-                    active
-                      ? sc.active + " border-2 shadow-sm transform scale-[1.02]"
-                      : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/40 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/80"
+                <div key={i} className="relative group/stage">
+                  <button
+                    type="button"
+                    onClick={() => setStage(i + 1)}
+                    className={cn(
+                      "w-full text-left px-4 py-4 rounded-xl text-sm transition-all duration-200 border-2 relative overflow-hidden focus-ring",
+                      active
+                        ? sc.active + " border-2 shadow-sm transform scale-[1.02]"
+                        : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/40 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/80",
+                      isStage5 && active && "shadow-emerald-500/30 shadow-lg ring-1 ring-emerald-500/20"
+                    )}
+                  >
+                    {isStage5 && (
+                      <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl">
+                        <div className={cn("absolute inset-0 bg-gradient-to-br from-emerald-400/10 to-green-500/5 opacity-0 transition-opacity duration-300", active && "opacity-100")} />
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className={cn("text-xl transition-transform duration-200", active && "scale-110", "group-hover/stage:scale-110")}>{STAGE_ICONS[i]}</span>
+                      <span className={cn("text-xs font-bold uppercase tracking-wider", active ? sc.text : "text-gray-400")}>ระยะ {i + 1}</span>
+                      {isStage5 && <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 rounded-full">ใหม่</span>}
+                    </div>
+                    <p className={cn("text-sm font-bold leading-tight", active ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300")}>{name}</p>
+                    {active && (
+                      <div className={cn("absolute top-4 right-4 w-2 h-2 rounded-full", sc.dot, isStage5 && "animate-pulse shadow-sm shadow-emerald-500/60")} />
+                    )}
+                  </button>
+                  {/* Tooltip for stage 5 */}
+                  {isStage5 && tooltips.length > 0 && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-gray-900 dark:bg-gray-950 text-white rounded-xl p-3 text-xs shadow-xl z-20 opacity-0 group-hover/stage:opacity-100 transition-all duration-200 pointer-events-none translate-y-1 group-hover/stage:translate-y-0 border border-emerald-500/20">
+                      <p className="font-bold text-emerald-400 mb-2 text-[11px]">ประโยชน์ของระยะนี้</p>
+                      <ul className="space-y-1">
+                        {tooltips.map((tip, ti) => (
+                          <li key={ti} className="flex items-start gap-1.5">
+                            <span className="text-emerald-400 mt-0.5 shrink-0">•</span>
+                            <span className="text-gray-300 leading-relaxed">{tip}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 dark:bg-gray-950 border-r border-b border-emerald-500/20 rotate-45 -mt-1" />
+                    </div>
                   )}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xl group-hover:scale-110 transition-transform">{STAGE_ICONS[i]}</span>
-                    <span className={cn("text-xs font-bold uppercase tracking-wider", active ? sc.text : "text-gray-400")}>ระยะ {i + 1}</span>
-                  </div>
-                  <p className={cn("text-sm font-bold leading-tight", active ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300")}>{name}</p>
-                  {active && (
-                    <div className={cn("absolute top-4 right-4 w-2 h-2 rounded-full", sc.dot)} />
-                  )}
-                </button>
+                </div>
               );
             })}
           </div>

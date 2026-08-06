@@ -63,6 +63,24 @@ const STAGES = [
       { name: "ยาป้องกันราน้ำค้างหลังเก็บ", unit: "ลิตร", quantityPerRai: 0.6, costPerUnit: 380 },
     ],
   },
+  {
+    stage: 5,
+    stageName: "ทำใบ / ฟื้นฟูต้น (มิ.ย.–ก.ย.)",
+    fertilizers: [
+      { name: "ปุ๋ยไนโตรเจนสูง 46-0-0 (ยูเรีย)", unit: "กก.", quantityPerRai: 20, costPerUnit: 18 },
+      { name: "ปุ๋ยสูตร 25-7-7 (ส่งเสริมใบ)", unit: "กก.", quantityPerRai: 15, costPerUnit: 28 },
+      { name: "ปุ๋ยอินทรีย์ชีวภาพ", unit: "กก.", quantityPerRai: 40, costPerUnit: 12 },
+      { name: "แคลเซียม-แมกนีเซียม-โบรอน", unit: "ลิตร", quantityPerRai: 3, costPerUnit: 320 },
+      { name: "ธาตุเหล็ก-สังกะสี (Fe-Zn)", unit: "กก.", quantityPerRai: 2, costPerUnit: 150 },
+    ],
+    pesticides: [
+      { name: "ฮอร์โมนออกซิน (ส่งเสริมแตกใบ)", unit: "ลิตร", quantityPerRai: 1.0, costPerUnit: 380 },
+      { name: "ไซโตไคนิน (เร่งใบอ่อน)", unit: "ลิตร", quantityPerRai: 0.8, costPerUnit: 420 },
+      { name: "ยาป้องกันราน้ำค้าง (ช่วงใบอ่อน)", unit: "ลิตร", quantityPerRai: 0.7, costPerUnit: 360 },
+      { name: "ยาป้องกันไรแดง/เพลี้ยใบ", unit: "ลิตร", quantityPerRai: 0.5, costPerUnit: 400 },
+      { name: "สารป้องกันโรคใบจุด/ใบไหม้", unit: "ลิตร", quantityPerRai: 0.6, costPerUnit: 390 },
+    ],
+  },
 ];
 
 router.post("/fertilizer/calculate", async (req, res): Promise<void> => {
@@ -76,7 +94,7 @@ router.post("/fertilizer/calculate", async (req, res): Promise<void> => {
   const stageData = STAGES.find((s) => s.stage === stage);
 
   if (!stageData) {
-    res.status(400).json({ error: "Invalid stage. Must be 1-4." });
+    res.status(400).json({ error: "Invalid stage. Must be 1-5." });
     return;
   }
 

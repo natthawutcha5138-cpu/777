@@ -5,7 +5,7 @@ import {
   Home, Wallet, Calculator, Sprout, BarChart3, Brain,
   Bell, Search, ChevronDown, LogOut, Menu, X,
   Sun, Moon, Settings, User, ChevronLeft, ChevronRight,
-  Zap, CheckSquare, Users, PackageOpen, Hammer
+  Zap, CheckSquare, Users, PackageOpen, Hammer, History
 } from "lucide-react";
 import WeatherWidget from "@/components/WeatherWidget";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -22,6 +22,7 @@ const navItems = [
   { path: "/inventory",   label: "คลังสินค้า",             icon: PackageOpen,badge: null },
   { path: "/equipment",   label: "เครื่องมือเครื่องจักร",     icon: Hammer,    badge: null },
   { path: "/fertilizer",  label: "คำนวณปุ๋ยและยา",       icon: Calculator,badge: null },
+  { path: "/farm-history",label: "ข้อมูลย้อนหลัง",         icon: History,   badge: null },
   { path: "/forecast",    label: "พยากรณ์ฤดูกาล",         icon: BarChart3, badge: null },
   { path: "/ai-analysis", label: "AI วิเคราะห์ฟาร์ม",    icon: Brain,     badge: "AI" },
 ];
@@ -30,6 +31,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/": "หน้าหลัก",
   "/accounting": "บัญชีรายรับ-รายจ่าย",
   "/fertilizer": "คำนวณปุ๋ยและยา",
+  "/farm-history": "ข้อมูลย้อนหลัง / ประวัติสวน",
   "/plots": "จัดการแปลง",
   "/forecast": "พยากรณ์ฤดูกาล",
   "/ai-analysis": "AI วิเคราะห์ฟาร์ม",
