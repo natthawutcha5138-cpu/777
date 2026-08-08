@@ -7,3 +7,4 @@ export * from "./inventory";
 export * from "./equipment";
 export * from "./notifications";
 export * from "./settings";
+export * from "./farmHistory";

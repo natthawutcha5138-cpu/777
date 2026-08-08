@@ -1,4 +1,4 @@
-// @ts-nocheck
+// farmHistoryService.ts@ts-nocheck
 import { db } from "@workspace/db";
 import {
   transactionsTable,
@@ -6,6 +6,7 @@ import {
   tasksTable,
   attendanceTable,
   inventoryItemsTable,
+  farmHistoryTable,
 } from "@workspace/db";
 import { eq, and, sql } from "drizzle-orm";
 
@@ -48,9 +49,9 @@ export async function getYearlySummaries(
     .from(plotsTable)
     .where(eq(plotsTable.userId, userId));
 
-  const totalPlots   = plots.length;
-  const totalTrees   = plots.reduce((s, p) => s + p.treeCount, 0);
-  const totalAreaRai = plots.reduce((s, p) => s + p.areRai,    0);
+  const totalPlots = plots.length;
+  const totalTrees = plots.reduce((s, p) => s + p.treeCount, 0);
+  const totalAreaRai = plots.reduce((s, p) => s + p.areRai, 0);
 
   const results: YearlySummary[] = [];
 
@@ -65,22 +66,29 @@ export async function getYearlySummaries(
         ),
       );
 
-    const totalIncome  = txs.filter(t => t.type === "income").reduce((s, t) => s + t.amount, 0);
-    const totalExpense = txs.filter(t => t.type === "expense").reduce((s, t) => s + t.amount, 0);
-    const netProfit    = totalIncome - totalExpense;
-    const roi          = totalExpense > 0 ? Math.round((netProfit / totalExpense) * 1000) / 10 : 0;
-    const costPerRai   = totalAreaRai > 0 ? Math.round(totalExpense / totalAreaRai) : 0;
-    const revenuePerTree = totalTrees > 0 ? Math.round(totalIncome / totalTrees) : 0;
+    const totalIncome = txs
+      .filter((t) => t.type === "income")
+      .reduce((s, t) => s + t.amount, 0);
+    const totalExpense = txs
+      .filter((t) => t.type === "expense")
+      .reduce((s, t) => s + t.amount, 0);
+    const netProfit = totalIncome - totalExpense;
+    const roi =
+      totalExpense > 0 ? Math.round((netProfit / totalExpense) * 1000) / 10 : 0;
+    const costPerRai =
+      totalAreaRai > 0 ? Math.round(totalExpense / totalAreaRai) : 0;
+    const revenuePerTree =
+      totalTrees > 0 ? Math.round(totalIncome / totalTrees) : 0;
 
     results.push({
       year,
-      totalIncome:   Math.round(totalIncome),
-      totalExpense:  Math.round(totalExpense),
-      netProfit:     Math.round(netProfit),
+      totalIncome: Math.round(totalIncome),
+      totalExpense: Math.round(totalExpense),
+      netProfit: Math.round(netProfit),
       roi,
       totalPlots,
       totalTrees,
-      totalAreaRai:  Math.round(totalAreaRai * 10) / 10,
+      totalAreaRai: Math.round(totalAreaRai * 10) / 10,
       costPerRai,
       revenuePerTree,
     });
@@ -113,17 +121,31 @@ export async function getRadarMetrics(
       ),
     );
 
-  const income  = txs.filter(t => t.type === "income").reduce((s, t) => s + t.amount, 0);
-  const expense = txs.filter(t => t.type === "expense").reduce((s, t) => s + t.amount, 0);
-  const roi     = expense > 0 ? (income - expense) / expense * 100 : 0;
+  const income = txs
+    .filter((t) => t.type === "income")
+    .reduce((s, t) => s + t.amount, 0);
+  const expense = txs
+    .filter((t) => t.type === "expense")
+    .reduce((s, t) => s + t.amount, 0);
+  const roi = expense > 0 ? ((income - expense) / expense) * 100 : 0;
 
   // Income score: normalise ROI into 0–100 (ROI 50% → 100, 0% → 50, negative → lower)
-  const incomeScore     = Math.round(Math.min(100, Math.max(0, roi > 0 ? Math.min(100, roi * 1.5 + 50) : Math.max(0, 50 + roi))));
+  const incomeScore = Math.round(
+    Math.min(
+      100,
+      Math.max(
+        0,
+        roi > 0 ? Math.min(100, roi * 1.5 + 50) : Math.max(0, 50 + roi),
+      ),
+    ),
+  );
   // Quality score: ROI * 2, capped at 100
-  const qualityScore    = Math.round(Math.min(100, Math.max(0, roi * 2)));
+  const qualityScore = Math.round(Math.min(100, Math.max(0, roi * 2)));
   // Cost efficiency: lower expense/income ratio → higher score (60% ratio → ~80 pts)
-  const costRatio       = income > 0 ? (expense / income) : 1;
-  const costScore       = Math.round(Math.min(100, Math.max(0, Math.round((1 - costRatio) * 100 + 20))));
+  const costRatio = income > 0 ? expense / income : 1;
+  const costScore = Math.round(
+    Math.min(100, Math.max(0, Math.round((1 - costRatio) * 100 + 20))),
+  );
 
   // -- 4: task completion rate --
   const tasks = await db
@@ -136,10 +158,9 @@ export async function getRadarMetrics(
       ),
     );
 
-  const doneTasks   = tasks.filter(t => t.status === "done").length;
-  const taskScore   = tasks.length > 0
-    ? Math.round((doneTasks / tasks.length) * 100)
-    : 50; // neutral when no data
+  const doneTasks = tasks.filter((t) => t.status === "done").length;
+  const taskScore =
+    tasks.length > 0 ? Math.round((doneTasks / tasks.length) * 100) : 50; // neutral when no data
 
   // -- 5: worker attendance rate --
   const attendance = await db
@@ -152,10 +173,13 @@ export async function getRadarMetrics(
       ),
     );
 
-  const presentCount    = attendance.filter(a => a.status === "present" || a.status === "half_day").length;
-  const attendanceScore = attendance.length > 0
-    ? Math.round((presentCount / attendance.length) * 100)
-    : 50;
+  const presentCount = attendance.filter(
+    (a) => a.status === "present" || a.status === "half_day",
+  ).length;
+  const attendanceScore =
+    attendance.length > 0
+      ? Math.round((presentCount / attendance.length) * 100)
+      : 50;
 
   // -- 6: inventory health --
   const inventory = await db
@@ -163,20 +187,23 @@ export async function getRadarMetrics(
     .from(inventoryItemsTable)
     .where(eq(inventoryItemsTable.userId, userId));
 
-  const healthyItems    = inventory.filter(i => i.quantity >= i.minQuantity).length;
-  const inventoryScore  = inventory.length > 0
-    ? Math.round((healthyItems / inventory.length) * 100)
-    : 50;
+  const healthyItems = inventory.filter(
+    (i) => i.quantity >= i.minQuantity,
+  ).length;
+  const inventoryScore =
+    inventory.length > 0
+      ? Math.round((healthyItems / inventory.length) * 100)
+      : 50;
 
   return {
     year,
     metrics: [
-      { metric: "ผลผลิต",             value: incomeScore },
-      { metric: "คุณภาพผลผลิต",       value: qualityScore },
-      { metric: "ต้นทุนการผลิต",       value: costScore },
-      { metric: "ประสิทธิภาพงาน",      value: taskScore },
-      { metric: "ประสิทธิภาพแรงงาน",   value: attendanceScore },
-      { metric: "สุขภาพคลังสินค้า",    value: inventoryScore },
+      { metric: "ผลผลิต", value: incomeScore },
+      { metric: "คุณภาพผลผลิต", value: qualityScore },
+      { metric: "ต้นทุนการผลิต", value: costScore },
+      { metric: "ประสิทธิภาพงาน", value: taskScore },
+      { metric: "ประสิทธิภาพแรงงาน", value: attendanceScore },
+      { metric: "สุขภาพคลังสินค้า", value: inventoryScore },
     ],
   };
 }

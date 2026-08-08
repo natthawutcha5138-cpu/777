@@ -8,6 +8,13 @@
       "when": 1784187797631,
       "tag": "0000_wooden_mister_fear",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786101804114,
+      "tag": "0001_spooky_proteus",
+      "breakpoints": true
     }
   ]
 }
