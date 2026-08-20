@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "account_type" varchar(20) DEFAULT 'owner' NOT NULL;
